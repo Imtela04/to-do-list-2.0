@@ -44,7 +44,7 @@ export default function Add(){
 
                 <input
                     type="text"
-                    placeholder="Task title"
+                    placeholder="Task title*"
                     value={form.title}
                     onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                     required
@@ -60,14 +60,15 @@ export default function Add(){
                     value={form.deadline}
                     onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
                 />
-                <select
+                <input
+                    placeholder="Task category (optional)"
                     value={form.category}
                     onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
                 >
-                    <option value="">Select a category</option>
+                    {/* <option value="">Select a category</option>
                     <option value="work">Work</option>
-                    <option value="personal">Personal</option>
-                </select>
+                    <option value="personal">Personal</option> */}
+                </input>
 
                 <button type="submit" disabled={loading}>
                     {loading ? "Adding..." : "Add Task"}
