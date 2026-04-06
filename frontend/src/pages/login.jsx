@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../api";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/navbar";
 
 export default function Login() {
     const [form, setForm]       = useState({ username: "", password: "" });
@@ -36,7 +36,7 @@ export default function Login() {
             <div className="auth-card">
                 <h1>Login</h1>
 
-                {error && <p className="error">{error}</p>}
+                {error && <p className="error">Invalid Credentials</p>}
 
                 <form onSubmit={handleSubmit}>
                     <input

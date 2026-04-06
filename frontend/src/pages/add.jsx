@@ -1,14 +1,14 @@
 import { useState, useContext } from "react";
 import { useNavigate  } from "react-router-dom";
-import { add } from "../api";
+import { addTask } from "../api";
 import { DarkModeContext } from "../App";
-import Navbar from "./navbar";
+import Navbar from "../components/navbar";
 
-export default function add(){
+export default function Add(){
     const[form, setForm]        =useState({ title:"", description:"", deadline:"", category:""});
     const[error, setError]      =useState("");
     const[loading, setLoading]  =useState(false);
-    const{ isDark, setIsDark }  =useContext(DarkModeContext);
+    // const{ isDark, setIsDark }  =useContext(DarkModeContext);
     const navigate              =useNavigate();
 
     const handleSubmit= async(e)=>{
@@ -21,8 +21,13 @@ export default function add(){
         try{
             await addTask(form.title,form.description,form.deadline,form.category);
             navigate("/");
-        }catch{
-            setError("Failed to add task")
+        }catch(err){
+            if (err.message.includes("409")){
+                setError("Task already exists");
+            }else{
+                setError("Failed to add task")
+            }
+            
         }finally{
             setLoading(false);
         }

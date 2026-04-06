@@ -1,5 +1,4 @@
-// const BASE = "http://localhost:8000";
-const res = await fetch(`/api/tasks`,{ header:authHeaders() })
+const BASE = "";
 
 function getToken() {
   return localStorage.getItem("access_token");
@@ -39,7 +38,7 @@ export async function register(username, password) {
 
 export function logout() {
   localStorage.removeItem("access_token");
-  window.location.href = "/login.html";
+  window.location.href = "/login";
 }
 
 export async function getTasks() {
@@ -48,14 +47,17 @@ export async function getTasks() {
   return res.json();
 }
 
-export async function addTask(title) {
+export async function addTask(title,description,deadline,category) {
+  console.log("addTask called with:", { title, description, deadline, category }); 
+
   const res = await fetch(`${BASE}/api/tasks`, {
     method: "POST",
     headers: authHeaders(),
-    body: new URLSearchParams({ title })
+    body: new URLSearchParams({ title,description,deadline,category })
   });
+  if (!res.ok) throw new Error(`${res.status}: ${res.statusText}`);
   return res.json();
-}
+  }
 
 export async function updateTaskTitle(id, title) {
     const res = await fetch(`${BASE}/api/tasks/${id}/title`, {

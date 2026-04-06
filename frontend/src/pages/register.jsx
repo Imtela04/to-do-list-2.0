@@ -1,15 +1,13 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { register } from "../api";
-import { DarkModeContext } from "../App";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/navbar";
 
 
 export default function Register(){
     const[form, setForm]        =useState({ username:"", password:"", confirm:""});
     const[error, setError]      =useState("");
     const[loading, setLoading]  =useState(false);
-    const{ isDark, setIsDark }  =useContext(DarkModeContext);
     const navigate              =useNavigate();
 
     const handleSubmit= async(e)=>{
@@ -30,9 +28,11 @@ export default function Register(){
         }
         setLoading(true);
         try{
-            await register(form.username,form.password,confirm);
+            //console.log("attempting registration with", form);
+            await register(form.username,form.password,form.confirm);
             navigate("/");
-        }catch{
+        }catch (err){
+            //console.log("error",err)
             setError(error.message || "Registration failed");
         }finally{
             setLoading(false);

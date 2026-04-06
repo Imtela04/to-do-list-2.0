@@ -1,13 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse,FileResponse
+from fastapi import FastAPI, Depends, HTTPException, Form
 # from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from backend.database import engine, Base, get_db
 from backend.models import User, Todo
 from backend.schemas import UserPublic, Token
-from backend.auth import hash_password, create_access_token, authenticate_user, get_current_user, create_user, get_username_from_header, get_username_from_cookie
- 
+from backend.auth import hash_password, create_access_token, authenticate_user, get_current_user, create_user
+from datetime import datetime
 
 #app initialisation
 #create db tables
@@ -36,7 +34,7 @@ def read_me(current_user: UserPublic = Depends(get_current_user)):
     return current_user
 
 #registration routes
-logged_in = ''
+
 @app.post("/api/register", status_code=201)
 def register(
     # request: Request,
@@ -67,13 +65,13 @@ def login(username: str = Form(...), password:str = Form(...),db: Session=Depend
         "token_type": "Bearer"
     }
 
-
-#logout route
-@app.get("/logout")
-def logout():
-    response = RedirectResponse(url="/login", status_code=303)
-    response.delete_cookie("user_id")
-    return response
+##handled client side via navbar
+# #logout route
+# @app.get("/logout")
+# def logout():
+#     response = RedirectResponse(url="/login", status_code=303)
+#     response.delete_cookie("user_id")
+#     return response
 
 
 #task management routes
@@ -82,16 +80,30 @@ def get_tasks(current_user: UserPublic = Depends(get_current_user), db:Session=D
     user = db.query(User).filter(User.username==current_user.username).first()
     return user.todos
 @app.post("/api/tasks")
-def add_task(current_user:UserPublic=Depends(get_current_user), title:str=Form(...), db:Session=Depends(get_db)):
-    user = db.query(User).filter(User.username==current_user.username).first()
-    task = Todo(title=title,owner_id=user.id)
-    exist = db.query(Todo).filter(Todo.title==title,Todo.owner_id==user.id).first()
-    if not exist:
-        db.add(task)
-        db.commit()
-        db.refresh(task)
+@app.post("/api/tasks")
+def add_task(
+    current_user: UserPublic = Depends(get_current_user),
+    title: str = Form(...),
+    description: str = Form(""),
+    deadline: str = Form(""),
+    category: str = Form(""),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.username == current_user.username).first()
+    exist = db.query(Todo).filter(Todo.title == title, Todo.owner_id == user.id).first()
+    if exist:
+        raise HTTPException(status_code=409, detail="Task with this title already exists")
+    task = Todo(
+        title=title,
+        owner_id=user.id,
+        description=description if description else None,
+        deadline=datetime.fromisoformat(deadline) if deadline else None,
+        category=category if category else None
+    )
+    db.add(task)
+    db.commit()
+    db.refresh(task)
     return task
-
 @app.delete("/api/tasks/{task_id}")
 def delete(task_id:int, current_user:UserPublic=Depends(get_current_user), db:Session=Depends(get_db)):
     

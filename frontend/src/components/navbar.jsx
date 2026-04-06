@@ -14,7 +14,7 @@ export default function Navbar({ showLogout = false, username = null }) {
 
     return (
         <div className="user-info">
-            {username && <span>Logged in as {username}</span>}
+            {username && <span>{username}</span>}
             <button id="dark-toggle" onClick={() => setIsDark(prev => !prev)}>
                 {isDark ? "☀️" : "🌙"}
             </button>

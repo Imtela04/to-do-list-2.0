@@ -2,7 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate  } from "react-router-dom";
 import { getTasks, toggleTask, deleteTask, updateTaskCategory, updateTaskDeadline, updateTaskDescription, updateTaskTitle } from "../api";
 import { DarkModeContext } from "../App";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/navbar";
+import Calendar from "../components/calendar";
 
 export default function Index(){
     const [tasks, setTasks]             =useState([]);
@@ -38,8 +39,8 @@ export default function Index(){
     const getGreeting = () => {
         const h = new Date().getHours();
         if (h >= 5  && h < 12) return { emoji: "🌅", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
-        if (h >= 12 && h < 16) return { emoji: "🌤️", text: "Good Afternoon", sub: "Keep up the momentum!" };
-        if (h >= 16 && h < 20) return { emoji: "🌇", text: "Good Evening",   sub: "You're almost there!" };
+        if (h >= 12 && h < 17) return { emoji: "🌤️", text: "Good Afternoon", sub: "Keep up the momentum!" };
+        if (h >= 17 && h < 24) return { emoji: "🌇", text: "Good Evening",   sub: "You're almost there!" };
         return                         { emoji: "🌙", text: "Good Night",     sub: "Recharge for tomorrow." };
     };
 
@@ -50,32 +51,6 @@ export default function Index(){
         return () => clearInterval(interval);
     }, []);
 
-    const renderCalendar = () => {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth();
-        const today = now.getDate();
-        const monthNames = ["January","February","March","April","May","June",
-                            "July","August","September","October","November","December"];
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        const blanks = Array(firstDay).fill(null);
-        const days   = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-        return (
-            <div className="calendar">
-                <div className="calendar-header">{monthNames[month]} {year}</div>
-                <div className="calendar-grid">
-                    {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => <span key={d}>{d}</span>)}
-                    {blanks.map((_, i) => <span key={`b${i}`} />)}
-                    {days.map(d => (
-                        <span key={d} className={d === today ? "today" : ""}>{d}</span>
-                    ))}
-                </div>
-            </div>
-        );
-
-    };
 
     const handleToggle = async(id)=>{
         await toggleTask(id);
@@ -101,9 +76,9 @@ export default function Index(){
     const saveEdit = async()=>{
         const task = tasks.find(t => t.id === editingTask);
         if (editForm.title       !== task.title)       await updateTaskTitle(editingTask, editForm.title);
-        if (editForm.description !== task.description) await updateTaskDescription(editingTask, editForm.description);
-        if (editForm.deadline    !== task.deadline)    await updateTaskDeadline(editingTask, editForm.deadline);
-        if (editForm.category    !== task.category)    await updateTaskCategory(editingTask, editForm.category);
+        if (editForm.description && editForm.description !== task.description) await updateTaskDescription(editingTask, editForm.description);
+        if (editForm.deadline && editForm.deadline    !== task.deadline)    await updateTaskDeadline(editingTask, editForm.deadline);
+        if (editForm.category && editForm.category    !== task.category)    await updateTaskCategory(editingTask, editForm.category);
         setEditingTask(null);
         refresh();
     };
@@ -117,9 +92,10 @@ export default function Index(){
             {/* Hero */}
             <header className="hero">
                 <div id="digital-clock">{time}</div>
+                <div id="today">{new Date().getDate()}/{new Date().getDay()}/{new Date().getFullYear()}</div>
                 <h1>{greeting.emoji} {greeting.text}</h1>
                 <p>{greeting.sub}</p>
-                {renderCalendar()}
+                <Calendar tasks={tasks} />
             </header>
 
             {/* User info bar */}
@@ -154,8 +130,7 @@ export default function Index(){
             </div>
 
             {/* Add button */}
-            <button onClick={() => navigate("/add")}>+</button>
-
+            <button className="add-btn" onClick={() => navigate("/add")}>+</button> 
             {/* Edit modal */}
             {editingTask && (
                 <div id="edit-modal" style={{ display: "flex" }}>
