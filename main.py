@@ -184,18 +184,20 @@ def toggle_task(
     db.refresh(task)
     return task
 
-app.mount("/src", StaticFiles(directory="frontend/src"), name="src")
-# Explicit routes for HTML pages — BEFORE the static catch-all
-@app.get("/")
-def serve_index():
-    return FileResponse("frontend/index.html")
 
-@app.get("/login.html")
-def serve_login():
-    return FileResponse("frontend/login.html")
+##deprecated frontend serving - now handled by React dev server during development, and by static build in production
+# app.mount("/src", StaticFiles(directory="frontend/src"), name="src")
+# # Explicit routes for HTML pages — BEFORE the static catch-all
+# @app.get("/")
+# def serve_index():
+#     return FileResponse("frontend/index.html")
 
-@app.get("/register.html")
-def serve_register():
-    return FileResponse("frontend/register.html")
-# templates = Jinja2Templates(directory="frontend/templates")
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")  # ✅ serve frontend from root
+# @app.get("/login.html")
+# def serve_login():
+#     return FileResponse("frontend/login.html")
+
+# @app.get("/register.html")
+# def serve_register():
+#     return FileResponse("frontend/register.html")
+# # templates = Jinja2Templates(directory="frontend/templates")
+# app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")  # ✅ serve frontend from root
