@@ -8,8 +8,10 @@ import Calendar from "../components/calendar";
 export default function Index(){
     const [tasks, setTasks]             =useState([]);
     const [clickedCard, setClickedCard] =useState(null);
-    const [editingTask, setEditingTask] =useState(null);
+    const [addTask, setAddTask] =useState(null);
     const [editForm, setEditForm]    =useState({title:"",description:"",deadline:"",category:""});
+    const [editingTask, setEditingTask] =useState(null);
+    const [addForm, setAddForm]    =useState({title:"",description:"",deadline:"",category:""});
     const { isDark } = useContext(DarkModeContext);
     const navigate                      =useNavigate();
 
@@ -59,10 +61,12 @@ export default function Index(){
 
     //greeting
     const getGreeting = () => {
+        const user = getUsername()
+        
         const h = new Date().getHours();
-        if (h >= 5  && h < 12) return { emoji: "🌅", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
+        if (h >= 5  && h < 12) return { emoji: "🌅", text: "Good Morning ",   sub: "Fresh start. Let's get it!" };
         if (h >= 12 && h < 17) return { emoji: "🌤️", text: "Good Afternoon", sub: "Keep up the momentum!" };
-        if (h >= 17 && h < 24) return { emoji: "🌇", text: "Good Evening",   sub: "You're almost there!" };
+        if (h >= 17 && h < 24) return { emoji: "🌇", text: "Good Evening ",   sub: "You're almost there!" };
         return                         { emoji: "🌙", text: "Good Night",     sub: "Recharge for tomorrow." };
     };
 
@@ -95,6 +99,17 @@ export default function Index(){
         });
 
     };
+
+    const openAdd = (task)=>{
+        setAddTask(task);
+        setAddForm({
+            title: task.title,
+            description: task.description||"",
+            deadline:       task.deadline ? new Date(task.deadline).toISOString().slice(0,16):"",
+            category:       task.category||""
+
+        })
+    }
     const saveEdit = async()=>{
         const task = tasks.find(t => t.id === editingTask);
         if (editForm.title       !== task.title)       await updateTaskTitle(editingTask, editForm.title);
@@ -109,109 +124,117 @@ export default function Index(){
     const cardColors = isDark
         ? ["blue", "purple"]
         : ["yellow", "purple"];
+    const username = getUsername();
 
     return(
         <div className="full-page">
-            {/* Hero */}
-            <div className="left-panel">
-                <div className="date-time">
-                    <div id="today">{new Date().getDate()}/{new Date().getDay()}/{new Date().getFullYear()}</div>
-                    <div id="digital-clock">{time}</div>
-                </div>
-                <Calendar tasks={tasks} />
-            </div>
-            <header className="hero">
-                <h1>{greeting.emoji} {greeting.text}</h1>
-                <p>{greeting.sub}</p>
-            </header>
-
             {/* User info bar */}
             <Navbar showLogout username={getUsername()} />
-            
-            {/* Tasks */}
-            <div className="tasks-container">
+            <header className="hero">
+                <h1>{greeting.emoji} {greeting.text}, {username}</h1>
+                <p>{greeting.sub}</p>
+            </header>
+            <div className="main">
+                {/* Hero */}
+                <div className="left-panel">
+                    <div className="date-time">
+                        <div id="today">{new Date().getDate()}/{new Date().getMonth()+1}/{new Date().getFullYear()}</div>
+                        <div id="digital-clock">{time}</div>
+                    </div>
+                    <Calendar tasks={tasks} />
+                </div>
+
                 
-                {tasks.map((task, i) => (
-                    <div
-                        key={task.id}
-                        className={`task-card ${cardColors[i % 2]} ${clickedCard === task.id ? "clicked" : ""}`}
-                        onClick={() => handleCardClick(task.id)}
-                    >
-                        <div className={`task-title ${task.completed ? "done" : ""}`}>
-                            {task.title}
+                
+                {/* Tasks */}
+                <div className="tasks-container">
+                    
+                    {tasks.map((task, i) => (
+                        <div
+                            key={task.id}
+                            className={`task-card ${cardColors[i % 2]} ${clickedCard === task.id ? "clicked" : ""}`}
+                            onClick={() => handleCardClick(task.id)}
+                        >
+                            <div className={`task-title ${task.completed ? "done" : ""}`}>
+                                {task.title}
+                            </div>
+                            <div className="task-actions">
+                                <button onClick={e => { e.stopPropagation(); handleToggle(task.id); }}>
+                                    {task.completed ? "↩️" : "✅"}
+                                </button>
+                                <button onClick={e => { e.stopPropagation(); openEdit(task); }}>✏️</button>
+                                <button onClick={e => { e.stopPropagation(); handleDelete(task.id); }}>🗑️</button>
+                            </div>
+                            <div className="task-preview">
+                                <p>📝 {task.description || "No description"}</p>
+                                <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
+                                <p>🏷️ {task.category || "No category"}</p>
+                            </div>
                         </div>
-                        <div className="task-actions">
-                            <button onClick={e => { e.stopPropagation(); handleToggle(task.id); }}>
-                                {task.completed ? "↩️" : "✅"}
-                            </button>
-                            <button onClick={e => { e.stopPropagation(); openEdit(task); }}>✏️</button>
-                            <button onClick={e => { e.stopPropagation(); handleDelete(task.id); }}>🗑️</button>
-                        </div>
-                        <div className="task-preview">
-                            <p>📝 {task.description || "No description"}</p>
-                            <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
-                            <p>🏷️ {task.category || "No category"}</p>
-                        </div>
-                    </div>
-                ))}
+                    ))}
 
-                <div className="task-count">
-                    <div id="total">
-                        <span>Total tasks</span>
-                        <div className="count-value">{tasks.length}</div>
-                    <div/>
-                    <div id="completed">
-                        <span>Completed</span>
-                        <div className="count-value">{tasks.filter(t=>t.completed).length}</div>
+                    <div className="task-count">
+                        <div id="total">
+                            <span>Total tasks</span>
+                            <div className="count-value">{tasks.length}</div>
+                        </div>
+                        <div className="status">
+                            <div id="completed">
+                                <span>Completed</span>
+                                <div className="count-value">{tasks.filter(t=>t.completed).length}</div>
+                            </div>
+                            <div id="remaining">
+                                <span>Remaining</span>
+                                <div className="count-value">{tasks.filter(t=>!t.completed).length}</div>
+                            </div>
+
+                        </div>
                     </div>
-                    <div id="remaining">
-                        <span>Remaining</span>
-                        <div className="count-value">{tasks.filter(t=>!t.completed).length}</div>
-                    </div>
+                    {/* Add button */}
+                    <button className="add-btn" onClick={() => navigate("/add")}>+</button> 
+
                 </div>
-                {/* Add button */}
-                <button className="add-btn" onClick={() => navigate("/add")}>+</button> 
-
             </div>
-        </div>
 
-            
-            {/* Edit modal */}
-            {editingTask && (
-                <div id="edit-modal" style={{ display: "flex" }}>
-                    <div className="modal-overlay" onClick={() => setEditingTask(null)} />
-                    <div className="modal-card">
-                        <h3>Edit Task</h3>
-                        <label>Title</label>
-                        <input
-                            value={editForm.title}
-                            onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))}
-                        />
-                        <label>Description</label>
-                        <textarea
-                            rows={3}
-                            value={editForm.description}
-                            onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))}
-                        />
-                        <label>Deadline</label>
-                        <input
-                            type="datetime-local"
-                            value={editForm.deadline}
-                            onChange={e => setEditForm(p => ({ ...p, deadline: e.target.value }))}
-                        />
-                        <label>Category</label>
-                        <input
-                            value={editForm.category}
-                            onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))}
-                        />
-                        <div className="modal-actions">
-                            <button onClick={() => setEditingTask(null)}>Cancel</button>
-                            <button onClick={saveEdit}>Save</button>
+                
+                {/* Edit modal */}
+                {editingTask && (
+                    <div id="edit-modal" style={{ display: "flex" }}>
+                        <div className="modal-overlay" onClick={() => setEditingTask(null)} />
+                        <div className="modal-card">
+                            <h3>Edit Task</h3>
+                            <label>Title</label>
+                            <input
+                                value={editForm.title}
+                                onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))}
+                            />
+                            <label>Description</label>
+                            <textarea
+                                rows={3}
+                                value={editForm.description}
+                                onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))}
+                            />
+                            <label>Deadline</label>
+                            <input
+                                type="datetime-local"
+                                value={editForm.deadline}
+                                onChange={e => setEditForm(p => ({ ...p, deadline: e.target.value }))}
+                            />
+                            <label>Category</label>
+                            <input
+                                value={editForm.category}
+                                onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))}
+                            />
+                            <div className="modal-actions">
+                                <button onClick={() => setEditingTask(null)}>Cancel</button>
+                                <button onClick={saveEdit}>Save</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
         </div>
+
+
     );
 
     

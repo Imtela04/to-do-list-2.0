@@ -2,7 +2,14 @@
    BASE RESET & VARIABLES
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
+@media (max-width: 768px) {
+    .main {
+        flex-direction: column;
+    }
+    body {
+        padding: 1em;
+    }
+}
 :root {
     --bg:           #f0eeff;
     --surface:      #ffffff;
@@ -59,7 +66,7 @@
    BODY & LAYOUT
    ============================================================ */
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'DM Mono', monospace;
     background: var(--bg);
     /* background-color: #666; */
     color: var(--text);
@@ -75,9 +82,9 @@ body {
     /* background-color: var(--danger); */
     display: flex;
     flex-direction: column;
-    /* align-items: stretch; */
+    align-items: flex;
     text-align: center;
-    padding: 20rem 10rem;
+    padding: 5rem 10rem;
     flex:auto;
     gap:20px;
     transition: background var(--transition), color var(--transition);
@@ -89,14 +96,13 @@ body {
     border-radius: 20px;
 }
 #digital-clock {
-    font-family: 'DM Mono', monospace;
     color: var(--clock-text);
-    font-size: 2rem;
+    font-size: 5rem;
     font-weight: 500;
     letter-spacing: -2px;
     line-height: 1;
     padding-top: 10px;
-    transition: color var(--transition);
+    transition: background 0.15s ease, transform 0.15s ease;
     
 }
 
@@ -115,6 +121,7 @@ body {
 }
 .full-page{
     display: flex;
+    flex-direction: column;
     /* background-color: #3e326b; */
     /* gap: 200px; */
     justify-content: center;
@@ -122,15 +129,29 @@ body {
     /* gap: 40px; */
     /* align-items: space-between; */
     width: 100%;
-    min-height:100vh;
+    /* min-height:100vh; */
     /* flex:auto; */
+}
+.main{
+    /* background-color: green; */
+    display: flex;
+    justify-content: space-between;
+    gap:5em;
+    /* align-items: stretch; */
+    width: 100%;
+    
+    
 }
 .left-panel{
     /* background-color: #0f0e17; */
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: flex-start;
     gap:20px;
+    min-width: 30%;
+    align-items: stretch;
+    /* min-width: 50%; */
     /* padding: 50px; */
 
 }
@@ -194,16 +215,14 @@ body {
    ============================================================ */
 .tasks-container {
     /* background-color: yellow; */
-    width: 25%;
-    min-width: 20em;
-    max-width: 620px;
+    width: 40%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
+    /* justify-content: center; */
+    /* align-items: stretch; */
     gap: 20px;
-    /* padding: 5em; */
-    margin: 16px auto;
+    padding: 2em;
+    /* margin: 16px auto; */
 }
 
 /* ============================================================
@@ -252,8 +271,8 @@ body {
    ============================================================ */
 .task-title {
     font-weight: 600;
-    font-size: 1rem;
-    padding-right: 90px; /* space for action buttons */
+    font-size: rem;
+    padding-right: 100px; /* space for action buttons */
     line-height: 1.4;
 }
 
@@ -296,7 +315,7 @@ body {
     overflow: hidden;
     opacity: 0;
     margin-top: 0;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     transition:
         max-height 0.3s ease,
         opacity 0.3s ease,
@@ -319,22 +338,24 @@ body {
 }
 .task-count {
     /* display: flex; */
-    gap: 10px;
+    /* gap: 10px; */
     margin-top: 16px;
 }
 
 .task-count > div {
     flex: 1;
-    background: var(--surface);
+    background: var(--card-a);
+    color: var(--card-a-text);
     border-radius: var(--radius);
-    padding: 12px 16px;
+    padding: 14px 16px;
     text-align: center;
     box-shadow: var(--shadow-sm);
 }
 
 .task-count span {
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--card-a-text);
+    opacity: 0.7;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -343,13 +364,19 @@ body {
 .count-value {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--card-a-text);
     font-family: 'DM Mono', monospace;
     margin-top: 4px;
 }
 
 #completed .count-value { color: #22c55e; }
 #remaining .count-value { color: var(--danger); }
+.status{
+    display: flex;
+    justify-content: center;
+    gap: 2em;
+    
+}
 /* ============================================================
    ADD BUTTON
    ============================================================ */
@@ -522,6 +549,8 @@ body {
     background-color: var(--calendar-color);
     padding: 20px;
     border-radius: 20px;
+    transition: background 0.15s ease, transform 0.15s ease;
+
 }
 .calendar-grid{
     display: grid;
@@ -533,7 +562,7 @@ body {
 }
 .calendar-day-label {
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     color: var(--calendar-text);
 }
 
@@ -560,7 +589,7 @@ body {
     padding: 3px 5px;
     border-radius: 6px;
     text-align: center;
-    font-size: 0.8rem;
+    font-size: 1.5rem;
     color: var(--calendar-text);
     cursor: pointer;
 }
