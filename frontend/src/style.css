@@ -18,8 +18,13 @@
     --card-blue-text: #ffffff;
     --card-dpurple: #4a2080;
     --card-dpurple-text: #ffffff;
+    --clock-color:  #7c3aed;
+    --calendar-color: #e8deff;
+    --calendar-text: #2d1b69;
+    --calendar-dot:#4a2080;
+    --calendar-today:#e0f2fe;
+    --clock-text: #ffffff;
     --danger:       #ef4444;
-    --clock-color:  #c4b5fd;
     --shadow-sm:    0 2px 8px rgba(0,0,0,0.08);
     --shadow-md:    0 4px 16px rgba(0,0,0,0.12);
     --shadow-lg:    0 8px 32px rgba(0,0,0,0.16);
@@ -32,7 +37,12 @@
     --surface:      #1a1828;
     --text:         #ede9fe;
     --text-muted:   #a78bfa;
-    --clock-color:  #a78bfa;
+    --clock-color:  #1e3a5f;
+    --clock-text: #ede9fe;
+    --calendar-color: #4a2080;
+    --calendar-text: #e0f2fe;
+    --calendar-dot: #e8deff;
+    --calendar-today:#2d1b69;
     --card-a:       #1e3a5f;
     --card-a-text:  #e0f2fe;
     --card-b:       #4a2080;
@@ -51,12 +61,10 @@
 body {
     font-family: 'DM Sans', sans-serif;
     background: var(--bg);
+    /* background-color: #666; */
     color: var(--text);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     min-height: 100vh;
-    padding: 20px;
+    padding: 1em 5em;
     transition: background var(--transition), color var(--transition);
 }
 
@@ -64,20 +72,32 @@ body {
    HERO / HEADER
    ============================================================ */
 .hero {
+    /* background-color: var(--danger); */
+    display: flex;
+    flex-direction: column;
+    /* align-items: stretch; */
     text-align: center;
-    padding: 2rem 1rem 1rem;
+    padding: 20rem 10rem;
+    flex:auto;
+    gap:20px;
     transition: background var(--transition), color var(--transition);
 }
 
+.date-time{
+    background-color: var(--clock-color);
+    padding: 20px;
+    border-radius: 20px;
+}
 #digital-clock {
     font-family: 'DM Mono', monospace;
-    color: var(--clock-color);
-    font-size: 4.5rem;
+    color: var(--clock-text);
+    font-size: 2rem;
     font-weight: 500;
     letter-spacing: -2px;
     line-height: 1;
     padding-top: 10px;
     transition: color var(--transition);
+    
 }
 
 .hero h1 {
@@ -93,7 +113,27 @@ body {
     font-size: 0.95rem;
     transition: color var(--transition);
 }
+.full-page{
+    display: flex;
+    /* background-color: #3e326b; */
+    /* gap: 200px; */
+    justify-content: center;
+    align-items: center;
+    /* gap: 40px; */
+    /* align-items: space-between; */
+    width: 100%;
+    min-height:100vh;
+    /* flex:auto; */
+}
+.left-panel{
+    /* background-color: #0f0e17; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap:20px;
+    /* padding: 50px; */
 
+}
 /* ============================================================
    USER INFO BAR (top right)
    ============================================================ */
@@ -132,7 +172,7 @@ body {
 
 .user-info .logout-btn {
     background: none;
-    color: #fff;
+    color: var(--danger);
     border: none;
     padding: 5px 12px;
     border-radius: 50px;
@@ -144,6 +184,7 @@ body {
 
 .user-info .logout-btn:hover {
     background: #dc2626;
+    color: #fff;
     transform: scale(1.05);
     cursor: pointer;
 }
@@ -152,11 +193,16 @@ body {
    TASKS CONTAINER
    ============================================================ */
 .tasks-container {
-    width: 100%;
+    /* background-color: yellow; */
+    width: 25%;
+    min-width: 20em;
     max-width: 620px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    justify-content: center;
+    align-items: stretch;
+    gap: 20px;
+    /* padding: 5em; */
     margin: 16px auto;
 }
 
@@ -271,7 +317,39 @@ body {
     padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.25);
 }
+.task-count {
+    /* display: flex; */
+    gap: 10px;
+    margin-top: 16px;
+}
 
+.task-count > div {
+    flex: 1;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.task-count span {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.count-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'DM Mono', monospace;
+    margin-top: 4px;
+}
+
+#completed .count-value { color: #22c55e; }
+#remaining .count-value { color: var(--danger); }
 /* ============================================================
    ADD BUTTON
    ============================================================ */
@@ -441,7 +519,9 @@ body {
 
 /* calendar */
 .calendar{
+    background-color: var(--calendar-color);
     padding: 20px;
+    border-radius: 20px;
 }
 .calendar-grid{
     display: grid;
@@ -454,7 +534,7 @@ body {
 .calendar-day-label {
     font-weight: 700;
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--calendar-text);
 }
 
 .has-deadline {
@@ -468,10 +548,10 @@ body {
     bottom: 1px;
     left: 50%;
     transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--accent);
+    width: 1px;
+    height: 1px;
+    /* border-radius: 100%; */
+    background: var(--danger);
     display: block;
 }
 
@@ -481,13 +561,13 @@ body {
     border-radius: 6px;
     text-align: center;
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--calendar-text);
     cursor: pointer;
 }
 
 .calendar-grid .today {
-    background: var(--accent);
-    color: #fff;
+    background: var(--calendar-text);
+    color: var(--calendar-today);
     font-weight: 700;
     border-radius: 50%;
     cursor: pointer;
@@ -599,5 +679,5 @@ body {
 
 /* today */
 #today{
-    color: var(--clock-color);
+    color: var(--clock-text);
 }

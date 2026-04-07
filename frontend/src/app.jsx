@@ -9,7 +9,18 @@ import "./style.css";
 export const DarkModeContext = createContext();
 
 function PrivateRoute({ children }) {
-    return localStorage.getItem("access_token") ? children : <Navigate to="/login" />;
+    const token = localStorage.getItem("access_token");
+    if (!token) return <Navigate to="/login" />;
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        if (payload.exp * 1000 < Date.now()) {
+            localStorage.removeItem("access_token");
+            return <Navigate to="/login" />;
+        }
+    } catch {
+        return <Navigate to="/login" />;
+    }
+    return children;
 }
 
 export default function App() {

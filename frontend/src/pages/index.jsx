@@ -22,17 +22,39 @@ export default function Index(){
         }catch{return null;}
     };
 
+    const isTokenExpired =()=>{
+        const token = localStorage.getItem("access_token");
+        if (!token) return true;
+        try{
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            return payload.exp*1000<Date.now();
+        }catch{
+            return true;
+        }
+    };
+
     const refresh = async()=>{
         const data = await getTasks();
         if (data) setTasks(data);
     };
 
-    useEffect(()=>{                                     //useEffect best kept for fetching external data only, otherwise resort to direct function calls
-        if (!localStorage.getItem("access_token")){
-            navigate("/login")
+    useEffect(() => {
+        if (!localStorage.getItem("access_token") || isTokenExpired()) {
+            localStorage.removeItem("access_token"); // ✅ clean up expired token
+            navigate("/login");
             return;
         }
         refresh();
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (isTokenExpired()) {
+                localStorage.removeItem("access_token");
+                navigate("/login");
+            }
+        }, 30000); // check every 30 seconds
+        return () => clearInterval(interval);
     }, []);
 
     //greeting
@@ -87,23 +109,28 @@ export default function Index(){
     const cardColors = isDark
         ? ["blue", "purple"]
         : ["yellow", "purple"];
+
     return(
-        <div>
+        <div className="full-page">
             {/* Hero */}
+            <div className="left-panel">
+                <div className="date-time">
+                    <div id="today">{new Date().getDate()}/{new Date().getDay()}/{new Date().getFullYear()}</div>
+                    <div id="digital-clock">{time}</div>
+                </div>
+                <Calendar tasks={tasks} />
+            </div>
             <header className="hero">
-                <div id="digital-clock">{time}</div>
-                <div id="today">{new Date().getDate()}/{new Date().getDay()}/{new Date().getFullYear()}</div>
                 <h1>{greeting.emoji} {greeting.text}</h1>
                 <p>{greeting.sub}</p>
-                <Calendar tasks={tasks} />
             </header>
 
             {/* User info bar */}
             <Navbar showLogout username={getUsername()} />
             
-
             {/* Tasks */}
             <div className="tasks-container">
+                
                 {tasks.map((task, i) => (
                     <div
                         key={task.id}
@@ -127,10 +154,28 @@ export default function Index(){
                         </div>
                     </div>
                 ))}
-            </div>
 
-            {/* Add button */}
-            <button className="add-btn" onClick={() => navigate("/add")}>+</button> 
+                <div className="task-count">
+                    <div id="total">
+                        <span>Total tasks</span>
+                        <div className="count-value">{tasks.length}</div>
+                    <div/>
+                    <div id="completed">
+                        <span>Completed</span>
+                        <div className="count-value">{tasks.filter(t=>t.completed).length}</div>
+                    </div>
+                    <div id="remaining">
+                        <span>Remaining</span>
+                        <div className="count-value">{tasks.filter(t=>!t.completed).length}</div>
+                    </div>
+                </div>
+                {/* Add button */}
+                <button className="add-btn" onClick={() => navigate("/add")}>+</button> 
+
+            </div>
+        </div>
+
+            
             {/* Edit modal */}
             {editingTask && (
                 <div id="edit-modal" style={{ display: "flex" }}>

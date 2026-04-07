@@ -8,8 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start:backend": "cd .. && uvicorn main:app --reload",
-    "dev:all": "concurrently \"npm run dev\" \"npm run start:backend\""
+    "start:backend": "cd /d C:\\Users\\Maestro\\fastapi+react\\to-do-list-2.0 && C:\\Users\\Maestro\\fastapi+react\\to-do-list-2.0\\venv\\Scripts\\uvicorn.exe main:app --reload",
+    "dev:all": "concurrently \"npm run dev\" \"cmd /c npm run start:backend\""
   },
   "dependencies": {
     "react": "^19.2.4",
