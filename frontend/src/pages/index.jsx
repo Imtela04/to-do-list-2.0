@@ -5,17 +5,47 @@ import { DarkModeContext } from "../App";
 import Navbar from "../components/navbar";
 import Calendar from "../components/calendar";
 
+function Countdown({ deadline }) {
+    const [timeLeft, setTimeLeft] = useState("");
+
+    useEffect(() => {
+        const calc = () => {
+            const diff = new Date(deadline) - new Date();
+            if (diff <= 0) { setTimeLeft("Overdue"); return; }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            if (d > 0) setTimeLeft(`${d}d ${h}h ${m}m`);
+            else if (h > 0) setTimeLeft(`${h}h ${m}m ${s}s`);
+            else setTimeLeft(`${m}m ${s}s`);
+        };
+        calc();
+        const interval = setInterval(calc, 1000);
+        return () => clearInterval(interval);
+    }, [deadline]);
+
+    return (
+        <span className={`text-xs font-mono font-semibold ${timeLeft === "Overdue" ? "text-red-500" : "text-green-400"}`}>
+            ⏱ {timeLeft}
+        </span>
+    );
+}
 export default function Index() {
-    const [tasks, setTasks]         = useState([]);
+    const [tasks, setTasks]             = useState([]);
     const [clickedCard, setClickedCard] = useState(null);
-    const [add, setadd]             = useState(null);
-    const [editForm, setEditForm]   = useState({ title: "", description: "", deadline: "", category: "" });
+    const [add, setadd]                 = useState(null);
+    const [editForm, setEditForm]       = useState({ title: "", description: "", deadline: "", category: "" });
     const [editingTask, setEditingTask] = useState(null);
-    const [addForm, setAddForm]     = useState({ title: "", description: "", deadline: "", category: "" });
-    const [error, setError]         = useState("");
-    const [loading, setLoading]     = useState(false);
-    const { isDark }                = useContext(DarkModeContext);
-    const navigate                  = useNavigate();
+    const [addForm, setAddForm]         = useState({ title: "", description: "", deadline: "", category: "" });
+    const [error, setError]             = useState("");
+    const [loading, setLoading]         = useState(false);
+    const [highlightedIds, setHighlightedIds] = useState([]);
+    const [selectedDate, setSelectedDate]     = useState(null);
+    const { isDark }                    = useContext(DarkModeContext);
+    const [isFiltered, setIsFiltered] = useState(false);
+    const [allDone, setAllDone] = useState(false);
+    const navigate                      = useNavigate();
 
     const getUsername = () => {
         const token = localStorage.getItem("access_token");
@@ -112,19 +142,49 @@ export default function Index() {
         refresh();
     };
 
-    const greeting  = getGreeting();
-    const username  = getUsername();
+    const clearFilter = () => { setHighlightedIds([]); setSelectedDate(null); setIsFiltered(false); };
+    const greeting   = getGreeting();
+    const username   = getUsername();
     const cardColors = isDark ? ["blue", "purple"] : ["yellow", "purple"];
-
-    // shared input style for modals
     const modalInput = "w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-mono outline-none transition-colors duration-200 focus:border-violet-600 resize-none";
-
-    // card color map
-    const cardStyle = {
-        yellow: { background: "var(--card-a)",      color: "var(--card-a-text)" },
-        purple: { background: "var(--card-b)",      color: "var(--card-b-text)" },
-        blue:   { background: "var(--card-blue)",   color: "var(--card-blue-text)" },
+    const cardStyle  = {
+        yellow: { background: "var(--card-a)",    color: "var(--card-a-text)" },
+        purple: { background: "var(--card-b)",    color: "var(--card-b-text)" },
+        blue:   { background: "var(--card-blue)", color: "var(--card-blue-text)" },
     };
+
+    const visibleTasks = (isFiltered
+        ? tasks.filter(t => highlightedIds.includes(t.id))
+        : tasks).sort((a,b)=>{
+            if (a.completed !==b.completed) return Number(a.completed)-Number(b.completed);
+            if (!a.deadline && !b.deadline) return 0;   
+            if(!a.deadline) return 1;
+            if(!b.deadline) return -1;
+            return new Date(a.deadline) - new Date(b.deadline);
+
+        });
+
+    
+    useEffect(() => {
+        if (!isFiltered || !selectedDate) return;
+        const [mon, day] = selectedDate.split(" ");
+        const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+        const monthIndex = monthNames.indexOf(mon);
+        const dayNum = parseInt(day);
+        const now = new Date();
+
+        const matched = tasks.filter(t => {
+            if (!t.deadline) return false;
+            const d = new Date(t.deadline);
+            return d.getDate() === dayNum &&
+                d.getMonth() === monthIndex &&
+                d.getFullYear() === now.getFullYear();
+        });
+
+        const allDoneNow = matched.length > 0 && matched.every(t => t.completed);
+        setHighlightedIds(matched.map(t => t.id));
+        setAllDone(allDoneNow);
+    }, [tasks]);
 
     return (
         <div className="flex flex-col items-center w-full" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 5em" }}>
@@ -143,7 +203,6 @@ export default function Index() {
 
                 {/* Left panel */}
                 <div className="flex flex-col gap-5 min-w-[30%]">
-                    {/* Clock */}
                     <div className="p-5 rounded-2xl" style={{ backgroundColor: "var(--clock-color)" }}>
                         <div className="text-sm" style={{ color: "var(--clock-text)" }}>
                             {new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()}
@@ -152,21 +211,116 @@ export default function Index() {
                             {time}
                         </div>
                     </div>
-                    <Calendar tasks={tasks} />
+                    <Calendar
+                        tasks={tasks}
+                        onDayClick={(matched, day, done) => {
+                            setHighlightedIds(matched.map(t => t.id));
+                            setSelectedDate(day);
+                            setIsFiltered(day !== null);
+                            setAllDone(done);
+                        }}
+                    />
+                    {/* Task count */}
+                    <div className="mt-4 rounded-[14px] px-4 py-3.5 shadow-sm" style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
+                        <div className="text-center">
+                            <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Total Tasks</span>
+                            <div className="text-4xl font-bold font-mono mt-1">{visibleTasks.length}</div>
+                        </div>
+                        <div className="flex justify-center gap-8 mt-3">
+                            <div className="text-center">
+                                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Completed</span>
+                                <div className="text-3xl font-bold font-mono mt-1 text-green-500">{visibleTasks.filter(t => t.completed).length}</div>
+                            </div>
+                            <div className="text-center">
+                                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Remaining</span>
+                                <div className="text-3xl font-bold font-mono mt-1 text-red-500">{visibleTasks.filter(t => !t.completed).length}</div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 {/* Tasks */}
                 <div className="flex flex-col gap-5 w-[40%] py-8">
-                    {tasks.map((task, i) => (
+                    {/* Show Today button */}
+                    <button
+                        onClick={() => {
+                            const now = new Date();
+                            const todayLabel = `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][now.getMonth()]} ${String(now.getDate()).padStart(2,"0")}`;
+                            const matched = tasks.filter(t => {
+                                if (!t.deadline) return false;
+                                const d = new Date(t.deadline);
+                                return d.getDate() === now.getDate() &&
+                                    d.getMonth() === now.getMonth() &&
+                                    d.getFullYear() === now.getFullYear();
+                            });
+                            setHighlightedIds(matched.map(t => t.id));
+                            setSelectedDate(todayLabel);
+                            setIsFiltered(true);
+                            setAllDone(matched.length > 0 && matched.every(t => t.completed));
+                        }}
+                        className="self-start text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-200 hover:scale-105"
+                        style={{ background: "var(--accent)", color: "#fff" }}
+                    >
+                        📅 Today
+                    </button>
+
+
+
+                    {/* Filter bar */}
+                    {selectedDate && (
+                        <div className="flex items-center justify-between text-xs font-semibold px-1"
+                            style={{ color: "var(--text-muted)" }}>
+                            <span>
+                                {highlightedIds.length === 0
+                                    ? `${selectedDate}`
+                                    : `Showing tasks for ${selectedDate}`}
+                            </span>
+                            <button onClick={clearFilter}
+                                    className="underline cursor-pointer"
+                                    style={{ color: "var(--accent)" }}>
+                                Clear filter
+                            </button>
+                            {/* )} */}
+                        </div>
+                    )}
+  
+                    {/* Nothing to do card */}
+                    {selectedDate && highlightedIds.length === 0 && !allDone && (
+                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center"
+                            style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
+                            Nothing to do
+                        </div>
+                    )}
+
+                    {/* All done card */}
+                    {selectedDate && allDone && (
+                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center"
+                            style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
+                            All done for the day! 🎉
+                        </div>
+                    )}                 
+                    
+                    {/* Task cards */}
+                    {visibleTasks.map((task, i) => (
                         <div
                             key={task.id}
-                            className={`task-wrapper w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-200 hover:shadow-lg group ${clickedCard === task.id ? "clicked" : ""}`}
+                            className={`task-wrapper w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-200 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
                             style={cardStyle[cardColors[i % 2]]}
                             onClick={() => handleCardClick(task.id)}
                         >
                             <div className={`font-semibold pr-24 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
                                 {task.title}
                             </div>
+
+                            {/* countdown */}
+                            {task.deadline && !task.completed && (
+                                <div className="mt-1">
+                                    <Countdown deadline={task.deadline} />
+                                </div>
+                            )}
+
+
                             <div className="absolute top-3 right-3 flex gap-1">
                                 {[
                                     { fn: () => handleToggle(task.id), icon: task.completed ? "↩️" : "✅" },
@@ -179,7 +333,6 @@ export default function Index() {
                                     >{icon}</button>
                                 ))}
                             </div>
-                            {/* Preview — keep CSS class for the max-height animation */}
                             <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
                                 <p>📝 {task.description || "No description"}</p>
                                 <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
@@ -187,25 +340,7 @@ export default function Index() {
                             </div>
                         </div>
                     ))}
-
-                    {/* Task count */}
-                    <div className="mt-4 rounded-[14px] px-4 py-3.5 shadow-sm" style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
-                        <div className="text-center">
-                            <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Total Tasks</span>
-                            <div className="text-4xl font-bold font-mono mt-1">{tasks.length}</div>
-                        </div>
-                        <div className="flex justify-center gap-8 mt-3">
-                            <div className="text-center">
-                                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Completed</span>
-                                <div className="text-3xl font-bold font-mono mt-1 text-green-500">{tasks.filter(t => t.completed).length}</div>
-                            </div>
-                            <div className="text-center">
-                                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Remaining</span>
-                                <div className="text-3xl font-bold font-mono mt-1 text-red-500">{tasks.filter(t => !t.completed).length}</div>
-                            </div>
-                        </div>
-                    </div>
-
+                    
                     {/* Add button */}
                     <button
                         onClick={e => { e.stopPropagation(); setadd(true); }}
@@ -221,7 +356,9 @@ export default function Index() {
             {add && (
                 <div className="fixed inset-0 flex items-center justify-center z-50">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setadd(null)} />
-                    <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10" style={{ background: "var(--surface)", color: "var(--text)" }}>
+                    <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10"
+                         style={{ background: "var(--surface)", color: "var(--text)" }}
+                         onKeyDown={e => e.key === "Enter" && handleSubmit(e)}>
                         <h3 className="text-lg font-bold mb-2" style={{ color: "var(--accent)" }}>Add Task</h3>
                         {error && <p className="text-red-500 font-semibold text-sm mb-2">{error}</p>}
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Title</label>
@@ -229,7 +366,8 @@ export default function Index() {
                             value={addForm.title} onChange={e => setAddForm(p => ({ ...p, title: e.target.value }))} />
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Description (Optional)</label>
                         <textarea rows={3} className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
-                            value={addForm.description} onChange={e => setAddForm(p => ({ ...p, description: e.target.value }))} />
+                            value={addForm.description} onChange={e => setAddForm(p => ({ ...p, description: e.target.value }))}
+                            onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Deadline (Optional)</label>
                         <input type="datetime-local" className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={addForm.deadline} onChange={e => setAddForm(p => ({ ...p, deadline: e.target.value }))} />
@@ -256,14 +394,17 @@ export default function Index() {
             {editingTask && (
                 <div className="fixed inset-0 flex items-center justify-center z-50">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditingTask(null)} />
-                    <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10" style={{ background: "var(--surface)", color: "var(--text)" }}>
+                    <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10"
+                         style={{ background: "var(--surface)", color: "var(--text)" }}
+                         onKeyDown={e => e.key === "Enter" && saveEdit()}>
                         <h3 className="text-lg font-bold mb-2" style={{ color: "var(--accent)" }}>Edit Task</h3>
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Title</label>
                         <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} />
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Description</label>
                         <textarea rows={3} className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
-                            value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} />
+                            value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))}
+                            onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Deadline</label>
                         <input type="datetime-local" className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.deadline} onChange={e => setEditForm(p => ({ ...p, deadline: e.target.value }))} />
