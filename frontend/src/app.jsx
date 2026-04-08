@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Index from "./pages/index";
-import AddTask from "./pages/add";
+import Add from "./pages/index";
 import "./style.css";
 
 export const DarkModeContext = createContext();
@@ -37,7 +37,7 @@ export default function App() {
                 <Route path="/login"    element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/"         element={<PrivateRoute><Index /></PrivateRoute>} />
-                <Route path="/add"      element={<PrivateRoute><AddTask /></PrivateRoute>} />
+                {/* <Route path="/add"      element={<PrivateRoute><Add /></PrivateRoute>} /> */}
             </Routes>
         </DarkModeContext.Provider>
     );

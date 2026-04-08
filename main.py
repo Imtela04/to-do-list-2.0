@@ -79,7 +79,7 @@ def login(username: str = Form(...), password:str = Form(...),db: Session=Depend
 def get_tasks(current_user: UserPublic = Depends(get_current_user), db:Session=Depends(get_db)):
     user = db.query(User).filter(User.username==current_user.username).first()
     return user.todos
-@app.post("/api/tasks")
+# @app.post("/api/tasks")
 @app.post("/api/tasks")
 def add_task(
     current_user: UserPublic = Depends(get_current_user),
