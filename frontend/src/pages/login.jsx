@@ -27,11 +27,12 @@ export default function Login() {
         }
     };
 
-    const inputClass = "w-full px-3.5 py-2.5 my-2 rounded-xl border border-gray-300 text-sm outline-none font-mono transition-colors duration-200 focus:border-violet-600"
+    const inputClass = "w-full px-3.5 py-2.5 my-2 rounded-xl border border-gray-300 text-sm outline-none font-mono transition-colors duration-500 focus:border-violet-600"
 
     return (
+        <><Navbar />
+
         <div className="flex justify-center items-center min-h-screen" style={{ background: "var(--bg)", color: "var(--text)" }}>
-            <Navbar />
 
             <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-9 text-center" style={{ background: "var(--surface)" }}>
                 <h1 className="text-2xl font-bold mb-5" style={{ color: "var(--accent)" }}>Login</h1>
@@ -60,7 +61,7 @@ export default function Login() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full mt-3 py-2.5 rounded-full font-bold text-sm text-white cursor-pointer transition-all duration-200 hover:scale-103 disabled:opacity-60"
+                        className="w-full mt-3 py-2.5 rounded-full font-bold text-sm text-white cursor-pointer transition-all duration-500 hover:scale-103 disabled:opacity-60"
                         style={{ background: "var(--accent)" }}
                         onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
                         onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}
@@ -77,5 +78,6 @@ export default function Login() {
                 </p>
             </div>
         </div>
+        </>
     );
 }

@@ -3,13 +3,14 @@
 
 @theme {
     --color-accent: #7c3aed;
-    --color-accent-hover: #6d28d9;
+    --color-accent-hover: #c4aaee;
     --color-danger: #ef4444;
     --color-card-a: #e8deff;
     --color-card-b: #7c3aed;
     --color-card-blue: #1e3a5f;
     --color-surface: #ffffff;
     --color-bg: #f0eeff;
+    --color-calendar-color: #d2cae6;
 }
 
 /* CSS variables for runtime dark mode switching */
@@ -43,8 +44,8 @@
     --clock-text:   #ede9fe;
     --calendar-color: #4a2080;
     --calendar-text: #e0f2fe;
-    --card-a:       #8a75af;
-    --card-a-text:  #d2cae6;
+    --card-a:       #1a1828;
+    --card-a-text:  #ede9fe;
     --card-b:       #4a2080;
     --card-b-text:  #ede9fe;
 }
