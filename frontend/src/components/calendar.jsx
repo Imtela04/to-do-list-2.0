@@ -56,7 +56,7 @@ export default function Calendar({ tasks = [], onDayClick }) {
     };
 
     return (
-        <div className="rounded-2xl p-5 transition-colors duration-200" style={{ backgroundColor: "var(--calendar-color)" }}>
+        <div className="rounded-2xl p-5 transition-colors duration-500" style={{ backgroundColor: "var(--calendar-color)" }}>
             <div className="text-base font-bold mb-3" style={{ color: "var(--calendar-text)" }}>
                 {monthNames[month]} {year}
             </div>
@@ -71,7 +71,7 @@ export default function Calendar({ tasks = [], onDayClick }) {
                         key={d}
                         onClick={() => handleClick(d)}
                         className={[
-                            "relative text-xl px-1 py-1 rounded-2xl text-center cursor-pointer transition-all duration-200",
+                            "relative text-xl px-1 py-1 rounded-2xl text-center cursor-pointer transition-all duration-500",
                             d === today ? "font-bold rounded-full" : "",
                             pendingMap[d] ? "font-bold" : "",
                             selected === d ? "ring-2 ring-offset-1" : ""
@@ -79,7 +79,7 @@ export default function Calendar({ tasks = [], onDayClick }) {
                         style={{
                             color: d === today ? "var(--clock-text)"
                                 : pendingMap[d] ? "var(--accent)"
-                                : "var(--calendar-text)",
+                                : "var(--text-muted)",
                             backgroundColor: d === today ? "var(--clock-color)" : undefined,
                         }}
                     >

@@ -13,16 +13,12 @@ export default function Navbar({ showLogout = false, username = null }) {
     };
 
     return (
-        <div>
-            <div className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 font-semibold text-sm"
-                style={{ color: "var(--text)" }}>
+        <div className="static w-full"
+            style={{background:"var(--card-a)",padding:"2em 4em"}}>
+                <h2 className="font-bold text-4xl" style={{color:"var(--card-b)"}}>what-do</h2>
+            <div className="absolute top-0 right-2 z-50 flex items-center py-2 font-semibold text-sm"
+                style={{ color: "var(--card-b)" }}>
                 {username && <span>{username}</span>}
-                <button
-                    onClick={() => setIsDark(prev => !prev)}
-                    className="bg-transparent border-none text-xl cursor-pointer px-1 py-0.5 rounded-full transition-transform duration-200 hover:rotate-12 hover:scale-125"
-                >
-                    {isDark ? "☀️" : "🌙"}
-                </button>
                 {showLogout && (
                     <button
                         onClick={handleLogout}
@@ -31,6 +27,13 @@ export default function Navbar({ showLogout = false, username = null }) {
                         Logout
                     </button>
                 )}
+                <button
+                    onClick={() => setIsDark(prev => !prev)}
+                    className="bg-transparent border-none text-xl cursor-pointer transition-transform duration-200 hover:rotate-12 hover:scale-125"
+                >
+                    {isDark ? "☀️" : "🌙"}
+                </button>
+
             </div>
         </div>
         

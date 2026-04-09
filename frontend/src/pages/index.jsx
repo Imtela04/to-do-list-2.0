@@ -26,7 +26,7 @@ function Countdown({ deadline }) {
     }, [deadline]);
 
     return (
-        <span className={`text-xs font-mono font-semibold ${timeLeft === "Overdue" ? "text-red-500" : "text-green-400"}`}>
+        <span className={`text-xs font-mono font-semibold ${timeLeft === "Overdue" ? "text-red-500" : "text-blue-950"}`}>
             ⏱ {timeLeft}
         </span>
     );
@@ -156,7 +156,7 @@ export default function Index() {
     const today = days[new Date().getDay()];
     const username   = getUsername();
     const cardColors = isDark ? ["blue", "purple"] : ["yellow", "purple"];
-    const modalInput = "w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-mono outline-none transition-colors duration-200 focus:border-violet-600 resize-none";
+    const modalInput = "w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-mono outline-none transition-colors duration-500 focus:border-violet-600 resize-none";
     const cardStyle  = {
         yellow: { background: "var(--card-a)",    color: "var(--card-a-text)" },
         purple: { background: "var(--card-b)",    color: "var(--card-b-text)" },
@@ -197,22 +197,26 @@ export default function Index() {
     }, [tasks]);
 
     return (
+        <> <Navbar showLogout username={username} />  
         <div className="flex flex-col items-center w-full" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 2em" }}>
-            <Navbar showLogout username={username} />
 
             {/* Hero */}
-            <header className="flex flex-col items-center text-center py-16 px-10 gap-2 w-full">
-                <h1 className="text-3xl font-bold" style={{ color: "var(--text)" }}>
-                    {greeting.emoji} {greeting.text}, {username}
-                </h1>
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{greeting.sub}</p>
-            </header>
 
             {/* Main layout */}
-            <div className="flex justify-between gap-20 w-full md:flex-row flex-col">
+            
+            <div className="flex justify-between gap-5 w-full md:flex-row flex-col">
+
+                <div className="flex flex-col gap-4 w-[80%] py-8">
+                    <div className="flex flex-col text-center py-2 px-2 gap-2 w-full">
+                        <h1 className="text-3xl font-bold" style={{ color: "var(--card-a-text)" }}>
+                            {greeting.emoji} {greeting.text}, {username}
+                        </h1>
+                        <p className="text-lg" style={{ color: "var(--card-a-text" }}>{greeting.sub}</p>
+                    </div>
+
                 {/* Tasks */}
-                <div className="flex flex-col gap-5 w-[80%] py-8">
-                    <div className="flex">
+
+                    <div className="flex items-center">
                         {/* Show Today button */}
                         <button
                             onClick={() => {
@@ -230,7 +234,7 @@ export default function Index() {
                                 setIsFiltered(true);
                                 setAllDone(matched.length > 0 && matched.every(t => t.completed));
                             }}
-                            className="self-start text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-200 hover:scale-105"
+                            className="self-start text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-105"
                             style={{ background: "var(--accent)", color: "#fff" }}
                         >
                             📅 Today
@@ -238,7 +242,7 @@ export default function Index() {
                         {/* Add button */}
                         <button
                             onClick={e => { e.stopPropagation(); setadd(true); }}
-                            className="w-12 h-12 rounded-full text-white text-2xl border-none cursor-pointer shadow-md transition-all duration-200 hover:scale-110 hover:rotate-90 ml-auto"
+                            className="w-12 h-12 rounded-full text-white text-2xl border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90 ml-auto"
                             style={{ background: "var(--accent)" }}
                             onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
                             onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}
@@ -248,7 +252,7 @@ export default function Index() {
                     {/* Filter bar */}
                     {selectedDate && (
                         <div className="flex items-center justify-between text-xs font-semibold px-1"
-                            style={{ color: "var(--text-muted)" }}>
+                            style={{ color: "var(--card-a)" }}>
                             <div className="gap-50">
                                 {highlightedIds.length === 0
                                     ? `${selectedDate}`
@@ -285,7 +289,7 @@ export default function Index() {
                     {visibleTasks.map((task, i) => (
                         <div
                             key={task.id}
-                            className={`task-wrapper w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-200 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
+                            className={`task-wrapper text-2xl w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-500 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
                             style={cardStyle[cardColors[i % 2]]}
                             onClick={() => handleCardClick(task.id)}
                         >
@@ -308,7 +312,7 @@ export default function Index() {
                                     { fn: () => handleDelete(task.id), icon: "🗑️" },                                ].map(({ fn, icon }, idx) => (
                                     <button key={idx}
                                         onClick={e => { e.stopPropagation(); fn(); }}
-                                        className="bg-white/25 border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-150 hover:bg-white/45 hover:scale-110"
+                                        className="bg-white/25 border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:bg-white/45 hover:scale-110"
                                     >{icon}</button>
                                 ))}
                             </div>
@@ -326,11 +330,11 @@ export default function Index() {
              {/* right panel */}
 
                 <div className="flex flex-col gap-5 w-70">
-                    <div className="p-5 rounded-2xl" style={{ backgroundColor: "var(--clock-color)" }}>
-                        <div className="text-sm" style={{ color: "var(--clock-text)" }}>
+                    <div className="rounded-2xl" style={{ backgroundColor: "var(--calendar-color)", padding:"2em 2em" }}>
+                        <div className="text-sm" style={{ color: "var(--calendar-text)" }}>
                             {new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()} {today}
                         </div>
-                        <div className="text-7xl font-medium leading-none pt-2 tracking-tight" style={{ color: "var(--clock-text)" }}>
+                        <div className="text-6xl font-medium leading-none pt-2 tracking-tight" style={{ color: "var(--card-a-text)" }}>
                             {time}
                         </div>
                     </div>
@@ -344,7 +348,7 @@ export default function Index() {
                         }}
                     />
                     {/* Task count */}
-                    <div className="mt-4 rounded-[14px] px-4 py-3.5 shadow-sm" style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
+                    <div className="mt-4 rounded-[14px] px-4 py-3.5 shadow-sm" style={{ background: "var(--calendar-color)", color: "var(--card-a-text)" }}>
                         <div className="text-center">
                             <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Total Tasks</span>
                             <div className="text-4xl font-bold font-mono mt-1">{visibleTasks.length}</div>
@@ -372,36 +376,36 @@ export default function Index() {
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setadd(null)} />
 
                     <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10"
-                         style={{ background: "var(--surface)", color: "var(--text)" }}
+                         style={{ background: "var(--card-a)", color: "var(--text)" }}
                          onKeyDown={e => e.key === "Enter" && handleSubmit(e)}>
 
                         <h3 className="text-lg font-bold mb-2" style={{ color: "var(--accent)" }}>Add Task</h3>
 
                         {error && <p className="text-red-500 font-semibold text-sm mb-2">{error}</p>}
 
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Title</label>
-                        <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-b)" }}>Title</label>
+                        <input className={modalInput} style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}
                             value={addForm.title} onChange={e => setAddForm(p => ({ ...p, title: e.target.value }))} />
 
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Description (Optional)</label>                        
-                        <textarea rows={3} className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-b)" }}>Description (Optional)</label>                        
+                        <textarea rows={3} className={modalInput} style={{ background: "var(--card-a)", color: "var(--card-a-text)"}}
                             value={addForm.description} onChange={e => setAddForm(p => ({ ...p, description: e.target.value }))}
                             onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
 
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Deadline (Optional)</label>
-                        <input type="datetime-local" className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-b)" }}>Deadline (Optional)</label>
+                        <input type="datetime-local" className={modalInput} style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}
                             value={addForm.deadline} onChange={e => setAddForm(p => ({ ...p, deadline: e.target.value }))} />
 
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Category (Optional)</label>
-                        <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-b)" }}>Category (Optional)</label>
+                        <input className={modalInput} style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}
                             value={addForm.category} onChange={e => setAddForm(p => ({ ...p, category: e.target.value }))} />
 
                         <div className="flex gap-2.5 mt-4">
                             <button onClick={() => { setadd(null); setError(""); }}
-                                className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200"
-                                style={{ background: "var(--bg)", color: "var(--text)" }}>Cancel</button>
+                                className="flex-1 py-2.5 border-1 rounded-full font-semibold text-sm cursor-pointer transition-all duration-500 hover:bg-gray-200"
+                                style={{ background: "var(--card-a)", color: "var(--text)" }}>Cancel</button>
                             <button onClick={handleSubmit} disabled={loading}
-                                className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-200 disabled:opacity-60"
+                                className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-500 disabled:opacity-60"
                                 style={{ background: "var(--accent)" }}
                                 onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
                                 onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>
@@ -424,29 +428,29 @@ export default function Index() {
 
                         <h3 className="text-lg font-bold mb-2" style={{ color: "var(--accent)" }}>Edit Task</h3>
                         
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Title</label>
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-a)" }}>Title</label>
                         <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} />
 
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Description</label>
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-a)" }}>Description</label>
                         <textarea rows={3} className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))}
                             onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
 
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Deadline</label>
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-a)" }}>Deadline</label>
                         <input type="datetime-local" className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.deadline} onChange={e => setEditForm(p => ({ ...p, deadline: e.target.value }))} />
 
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Category</label>
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--card-a)" }}>Category</label>
                         <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.category} onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))} />
 
                         <div className="flex gap-2.5 mt-4">
                             <button onClick={() => setEditingTask(null)}
-                                className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200"
+                                className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-500 hover:bg-gray-200"
                                 style={{ background: "var(--bg)", color: "var(--text)" }}>Cancel</button>
                             <button onClick={saveEdit}
-                                className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-200"
+                                className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-500"
                                 style={{ background: "var(--accent)" }}
                                 onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
                                 onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>Save</button>
@@ -466,7 +470,7 @@ export default function Index() {
                         <h3 className="text-lg font-bold" style={{ color: "var(--danger)" }}>
                             🗑️ Delete Task
                         </h3>
-                        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                        <p className="text-sm" style={{ color: "var(--card-a)" }}>
                             Are you sure you want to delete"{" "}
                             <strong style={{ color: "var(--text)" }}>
                                 {tasks.find(t => t.id === confirmDeleteId)?.title}
@@ -476,13 +480,13 @@ export default function Index() {
                         <div className="flex gap-2.5">
                             <button
                                 onClick={() => setConfirmDeleteId(null)}
-                                className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200"
+                                className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-500 hover:bg-gray-200"
                                 style={{ background: "var(--bg)", color: "var(--text)" }}>
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-200"
+                                className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-500"
                                 style={{ background: "var(--danger)" }}
                                 onMouseOver={e => e.currentTarget.style.background = "#dc2626"}
                                 onMouseOut={e => e.currentTarget.style.background = "var(--danger)"}>
@@ -494,5 +498,6 @@ export default function Index() {
             )}
 
         </div>
+        </> 
     );
 }
