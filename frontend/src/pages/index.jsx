@@ -38,6 +38,7 @@ export default function Index() {
     const [editForm, setEditForm]       = useState({ title: "", description: "", deadline: "", category: "" });
     const [editingTask, setEditingTask] = useState(null);
     const [addForm, setAddForm]         = useState({ title: "", description: "", deadline: "", category: "" });
+    const [confirmDeleteId, setConfirmDeleteId]               = useState(null);
     const [error, setError]             = useState("");
     const [loading, setLoading]         = useState(false);
     const [highlightedIds, setHighlightedIds] = useState([]);
@@ -46,6 +47,7 @@ export default function Index() {
     const [isFiltered, setIsFiltered] = useState(false);
     const [allDone, setAllDone] = useState(false);
     const navigate                      = useNavigate();
+
 
     const getUsername = () => {
         const token = localStorage.getItem("access_token");
@@ -102,7 +104,12 @@ export default function Index() {
     }, []);
 
     const handleToggle = async (id) => { await toggleTask(id); refresh(); };
-    const handleDelete = async (id) => { await deleteTask(id); refresh(); };
+    const handleDelete = async (id) => setConfirmDeleteId(id);
+    const confirmDelete = async()=>{
+        await deleteTask(confirmDeleteId);
+        setConfirmDeleteId(null);
+        refresh();
+    };
     const handleCardClick = (id) => { setClickedCard(prev => prev === id ? null : id); };
 
     const openEdit = (task) => {
@@ -132,6 +139,7 @@ export default function Index() {
         }
     };
 
+
     const saveEdit = async () => {
         const task = tasks.find(t => t.id === editingTask);
         if (editForm.title !== task.title) await updateTaskTitle(editingTask, editForm.title);
@@ -144,6 +152,8 @@ export default function Index() {
 
     const clearFilter = () => { setHighlightedIds([]); setSelectedDate(null); setIsFiltered(false); };
     const greeting   = getGreeting();
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = days[new Date().getDay()];
     const username   = getUsername();
     const cardColors = isDark ? ["blue", "purple"] : ["yellow", "purple"];
     const modalInput = "w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-mono outline-none transition-colors duration-200 focus:border-violet-600 resize-none";
@@ -187,7 +197,7 @@ export default function Index() {
     }, [tasks]);
 
     return (
-        <div className="flex flex-col items-center w-full" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 5em" }}>
+        <div className="flex flex-col items-center w-full" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 2em" }}>
             <Navbar showLogout username={username} />
 
             {/* Hero */}
@@ -199,13 +209,126 @@ export default function Index() {
             </header>
 
             {/* Main layout */}
-            <div className="flex justify-between gap-16 w-full md:flex-row flex-col">
+            <div className="flex justify-between gap-20 w-full md:flex-row flex-col">
+                {/* Tasks */}
+                <div className="flex flex-col gap-5 w-[80%] py-8">
+                    <div className="flex">
+                        {/* Show Today button */}
+                        <button
+                            onClick={() => {
+                                const now = new Date();
+                                const todayLabel = `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][now.getMonth()]} ${String(now.getDate()).padStart(2,"0")}`;
+                                const matched = tasks.filter(t => {
+                                    if (!t.deadline) return false;
+                                    const d = new Date(t.deadline);
+                                    return d.getDate() === now.getDate() &&
+                                        d.getMonth() === now.getMonth() &&
+                                        d.getFullYear() === now.getFullYear();
+                                });
+                                setHighlightedIds(matched.map(t => t.id));
+                                setSelectedDate(todayLabel);
+                                setIsFiltered(true);
+                                setAllDone(matched.length > 0 && matched.every(t => t.completed));
+                            }}
+                            className="self-start text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-200 hover:scale-105"
+                            style={{ background: "var(--accent)", color: "#fff" }}
+                        >
+                            📅 Today
+                        </button>
+                        {/* Add button */}
+                        <button
+                            onClick={e => { e.stopPropagation(); setadd(true); }}
+                            className="w-12 h-12 rounded-full text-white text-2xl border-none cursor-pointer shadow-md transition-all duration-200 hover:scale-110 hover:rotate-90 ml-auto"
+                            style={{ background: "var(--accent)" }}
+                            onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
+                            onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}
+                        >+</button>
+                    </div>
+                    
+                    {/* Filter bar */}
+                    {selectedDate && (
+                        <div className="flex items-center justify-between text-xs font-semibold px-1"
+                            style={{ color: "var(--text-muted)" }}>
+                            <div className="gap-50">
+                                {highlightedIds.length === 0
+                                    ? `${selectedDate}`
+                                    : `${selectedDate}`}
+                                <button onClick={clearFilter}
+                                    className="cursor-pointer"
+                                    style={{ color: "var(--danger)", padding:"0em 0.5em"  }}>
+                                    x
+                                </button>
+                            </div>
+                            
+                            
+                        </div>
+                    )}
+  
+                    {/* Nothing to do card */}
+                    {selectedDate && highlightedIds.length === 0 && !allDone && (
+                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center"
+                            style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
+                            Nothing to do
+                        </div>
+                    )}
 
-                {/* Left panel */}
-                <div className="flex flex-col gap-5 min-w-[30%]">
+                    {/* All done card */}
+                    {selectedDate && allDone && (
+                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center"
+                            style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
+                            All done for the day! 🎉
+                        </div>
+                    )}     
+
+                    
+                    {/* Task cards */}
+                    {visibleTasks.map((task, i) => (
+                        <div
+                            key={task.id}
+                            className={`task-wrapper w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-200 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
+                            style={cardStyle[cardColors[i % 2]]}
+                            onClick={() => handleCardClick(task.id)}
+                        >
+                            <div className={`font-semibold pr-24 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
+                                {task.title}
+                            </div>
+
+                            {/* countdown */}
+                            {task.deadline && !task.completed && (
+                                <div className="mt-1">
+                                    <Countdown deadline={task.deadline} />
+                                </div>
+                            )}
+
+
+                            <div className="absolute top-3 right-3 flex gap-1">
+                                {[
+                                    { fn: () => handleToggle(task.id), icon: task.completed ? "↩️" : "✅" },
+                                    { fn: () => openEdit(task),         icon: "✏️" },
+                                    { fn: () => handleDelete(task.id), icon: "🗑️" },                                ].map(({ fn, icon }, idx) => (
+                                    <button key={idx}
+                                        onClick={e => { e.stopPropagation(); fn(); }}
+                                        className="bg-white/25 border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-150 hover:bg-white/45 hover:scale-110"
+                                    >{icon}</button>
+                                ))}
+                            </div>
+                            <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
+                                <p>📝 {task.description || "No description"}</p>
+                                <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
+                                <p>🏷️ {task.category || "No category"}</p>
+                            </div>
+                        </div>
+                    ))}
+                    
+                    
+                </div>
+
+             {/* right panel */}
+
+                <div className="flex flex-col gap-5 w-70">
                     <div className="p-5 rounded-2xl" style={{ backgroundColor: "var(--clock-color)" }}>
                         <div className="text-sm" style={{ color: "var(--clock-text)" }}>
-                            {new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()}
+                            {new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()} {today}
                         </div>
                         <div className="text-7xl font-medium leading-none pt-2 tracking-tight" style={{ color: "var(--clock-text)" }}>
                             {time}
@@ -240,140 +363,39 @@ export default function Index() {
 
                 </div>
 
-                {/* Tasks */}
-                <div className="flex flex-col gap-5 w-[40%] py-8">
-                    {/* Show Today button */}
-                    <button
-                        onClick={() => {
-                            const now = new Date();
-                            const todayLabel = `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][now.getMonth()]} ${String(now.getDate()).padStart(2,"0")}`;
-                            const matched = tasks.filter(t => {
-                                if (!t.deadline) return false;
-                                const d = new Date(t.deadline);
-                                return d.getDate() === now.getDate() &&
-                                    d.getMonth() === now.getMonth() &&
-                                    d.getFullYear() === now.getFullYear();
-                            });
-                            setHighlightedIds(matched.map(t => t.id));
-                            setSelectedDate(todayLabel);
-                            setIsFiltered(true);
-                            setAllDone(matched.length > 0 && matched.every(t => t.completed));
-                        }}
-                        className="self-start text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-200 hover:scale-105"
-                        style={{ background: "var(--accent)", color: "#fff" }}
-                    >
-                        📅 Today
-                    </button>
-
-
-
-                    {/* Filter bar */}
-                    {selectedDate && (
-                        <div className="flex items-center justify-between text-xs font-semibold px-1"
-                            style={{ color: "var(--text-muted)" }}>
-                            <span>
-                                {highlightedIds.length === 0
-                                    ? `${selectedDate}`
-                                    : `Showing tasks for ${selectedDate}`}
-                            </span>
-                            <button onClick={clearFilter}
-                                    className="underline cursor-pointer"
-                                    style={{ color: "var(--accent)" }}>
-                                Clear filter
-                            </button>
-                            {/* )} */}
-                        </div>
-                    )}
-  
-                    {/* Nothing to do card */}
-                    {selectedDate && highlightedIds.length === 0 && !allDone && (
-                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center"
-                            style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
-                            Nothing to do
-                        </div>
-                    )}
-
-                    {/* All done card */}
-                    {selectedDate && allDone && (
-                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center"
-                            style={{ background: "var(--card-a)", color: "var(--card-a-text)" }}>
-                            All done for the day! 🎉
-                        </div>
-                    )}                 
-                    
-                    {/* Task cards */}
-                    {visibleTasks.map((task, i) => (
-                        <div
-                            key={task.id}
-                            className={`task-wrapper w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-200 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
-                            style={cardStyle[cardColors[i % 2]]}
-                            onClick={() => handleCardClick(task.id)}
-                        >
-                            <div className={`font-semibold pr-24 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
-                                {task.title}
-                            </div>
-
-                            {/* countdown */}
-                            {task.deadline && !task.completed && (
-                                <div className="mt-1">
-                                    <Countdown deadline={task.deadline} />
-                                </div>
-                            )}
-
-
-                            <div className="absolute top-3 right-3 flex gap-1">
-                                {[
-                                    { fn: () => handleToggle(task.id), icon: task.completed ? "↩️" : "✅" },
-                                    { fn: () => openEdit(task),         icon: "✏️" },
-                                    { fn: () => handleDelete(task.id),  icon: "🗑️" },
-                                ].map(({ fn, icon }, idx) => (
-                                    <button key={idx}
-                                        onClick={e => { e.stopPropagation(); fn(); }}
-                                        className="bg-white/25 border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-150 hover:bg-white/45 hover:scale-110"
-                                    >{icon}</button>
-                                ))}
-                            </div>
-                            <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
-                                <p>📝 {task.description || "No description"}</p>
-                                <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
-                                <p>🏷️ {task.category || "No category"}</p>
-                            </div>
-                        </div>
-                    ))}
-                    
-                    {/* Add button */}
-                    <button
-                        onClick={e => { e.stopPropagation(); setadd(true); }}
-                        className="w-12 h-12 rounded-full text-white text-2xl border-none cursor-pointer shadow-md transition-all duration-200 hover:scale-110 hover:rotate-90 ml-auto"
-                        style={{ background: "var(--accent)" }}
-                        onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
-                        onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}
-                    >+</button>
-                </div>
             </div>
+            
 
             {/* Add modal */}
             {add && (
                 <div className="fixed inset-0 flex items-center justify-center z-50">
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setadd(null)} />
+
                     <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10"
                          style={{ background: "var(--surface)", color: "var(--text)" }}
                          onKeyDown={e => e.key === "Enter" && handleSubmit(e)}>
+
                         <h3 className="text-lg font-bold mb-2" style={{ color: "var(--accent)" }}>Add Task</h3>
+
                         {error && <p className="text-red-500 font-semibold text-sm mb-2">{error}</p>}
+
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Title</label>
                         <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={addForm.title} onChange={e => setAddForm(p => ({ ...p, title: e.target.value }))} />
-                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Description (Optional)</label>
+
+                        <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Description (Optional)</label>                        
                         <textarea rows={3} className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={addForm.description} onChange={e => setAddForm(p => ({ ...p, description: e.target.value }))}
                             onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
+
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Deadline (Optional)</label>
                         <input type="datetime-local" className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={addForm.deadline} onChange={e => setAddForm(p => ({ ...p, deadline: e.target.value }))} />
+
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Category (Optional)</label>
                         <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={addForm.category} onChange={e => setAddForm(p => ({ ...p, category: e.target.value }))} />
+
                         <div className="flex gap-2.5 mt-4">
                             <button onClick={() => { setadd(null); setError(""); }}
                                 className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200"
@@ -393,24 +415,32 @@ export default function Index() {
             {/* Edit modal */}
             {editingTask && (
                 <div className="fixed inset-0 flex items-center justify-center z-50">
+
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setEditingTask(null)} />
+
                     <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10"
                          style={{ background: "var(--surface)", color: "var(--text)" }}
                          onKeyDown={e => e.key === "Enter" && saveEdit()}>
+
                         <h3 className="text-lg font-bold mb-2" style={{ color: "var(--accent)" }}>Edit Task</h3>
+                        
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Title</label>
                         <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.title} onChange={e => setEditForm(p => ({ ...p, title: e.target.value }))} />
+
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Description</label>
                         <textarea rows={3} className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))}
                             onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
+
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Deadline</label>
                         <input type="datetime-local" className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.deadline} onChange={e => setEditForm(p => ({ ...p, deadline: e.target.value }))} />
+
                         <label className="text-xs font-semibold mt-1.5" style={{ color: "var(--text-muted)" }}>Category</label>
                         <input className={modalInput} style={{ background: "var(--bg)", color: "var(--text)" }}
                             value={editForm.category} onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))} />
+
                         <div className="flex gap-2.5 mt-4">
                             <button onClick={() => setEditingTask(null)}
                                 className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200"
@@ -424,6 +454,45 @@ export default function Index() {
                     </div>
                 </div>
             )}
+
+            {/* delete message modal */}
+            {/* Confirm delete modal */}
+            {confirmDeleteId && (
+                <div className="fixed inset-0 flex items-center justify-center z-50">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setConfirmDeleteId(null)} />
+                    <div className="relative rounded-2xl p-8 w-full max-w-sm shadow-xl flex flex-col gap-4 z-10"
+                        style={{ background: "var(--surface)", color: "var(--text)" }}>
+                        <h3 className="text-lg font-bold" style={{ color: "var(--danger)" }}>
+                            🗑️ Delete Task
+                        </h3>
+                        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+                            Are you sure you want to delete"{" "}
+                            <strong style={{ color: "var(--text)" }}>
+                                {tasks.find(t => t.id === confirmDeleteId)?.title}
+                            </strong>"?
+                            This cannot be undone.
+                        </p>
+                        <div className="flex gap-2.5">
+                            <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="flex-1 py-2.5 rounded-full font-semibold text-sm cursor-pointer transition-all duration-200 hover:bg-gray-200"
+                                style={{ background: "var(--bg)", color: "var(--text)" }}>
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-200"
+                                style={{ background: "var(--danger)" }}
+                                onMouseOver={e => e.currentTarget.style.background = "#dc2626"}
+                                onMouseOut={e => e.currentTarget.style.background = "var(--danger)"}>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

@@ -71,16 +71,16 @@ export default function Calendar({ tasks = [], onDayClick }) {
                         key={d}
                         onClick={() => handleClick(d)}
                         className={[
-                            "relative text-xl px-1 py-1 rounded-2xl text-center cursor-pointer transition-all duration-150",
+                            "relative text-xl px-1 py-1 rounded-2xl text-center cursor-pointer transition-all duration-200",
                             d === today ? "font-bold rounded-full" : "",
                             pendingMap[d] ? "font-bold" : "",
                             selected === d ? "ring-2 ring-offset-1" : ""
                         ].join(" ")}
                         style={{
-                            color: d === today ? "var(--calendar-today)"
+                            color: d === today ? "var(--clock-text)"
                                 : pendingMap[d] ? "var(--accent)"
                                 : "var(--calendar-text)",
-                            backgroundColor: d === today ? "var(--calendar-color)" : undefined,
+                            backgroundColor: d === today ? "var(--clock-color)" : undefined,
                         }}
                     >
                         {d}
