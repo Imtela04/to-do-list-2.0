@@ -25,7 +25,7 @@ export default function Navbar({ showLogout = false, username = null }) {
     return (
         <div className="static w-full"
             style={{background:"var(--card-a)",padding:"2em 4em"}}>
-                <div className="flex">
+                <div className="flex ">
                     <h2 className="font-bold text-4xl" style={{color:"var(--card-b)"}}>what-do</h2>
 
                     {/* Greeting */}

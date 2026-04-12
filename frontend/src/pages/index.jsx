@@ -3,29 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { getTasks, toggleTask, deleteTask, updateTaskCategory, updateTaskDeadline, updateTaskDescription, updateTaskTitle, addTask } from "../api";
 import { DarkModeContext } from "../App";
 import Navbar from "../components/navbar";
-import Calendar from "../components/calendar";
+import RightPanel from "../components/panels/right-panel";
+import CategoryPanel from "../components/panels/category-panel";
+import { AddModal, EditModal, DeleteModal } from "../components/modals";
 
 // ============================================================
 // CONSTANTS
 // ============================================================
-const CATEGORIES = [
-    { value: "",           label: "Select a category" },
-    { value: "work",       label: "💼 Work" },
-    { value: "personal",   label: "🏠 Personal" },
-    { value: "health",     label: "💪 Health" },
-    { value: "finance",    label: "💰 Finance" },
-    { value: "education",  label: "📚 Education" },
-    { value: "other",      label: "📌 Other" },
-];
-
-const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const DAY_NAMES   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-
-const modalInput = "w-full px-3 py-2 rounded-xl border border-gray-300 text-sm font-mono outline-none transition-colors duration-500 focus:border-violet-600 resize-none";
+const MONTH_NAMES    = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAY_NAMES      = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const defaultDeadline = () => new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16);
 
 // ============================================================
-// SUB-COMPONENTS
+// COUNTDOWN (stays here — only used by task cards)
 // ============================================================
 function Countdown({ deadline }) {
     const [timeLeft, setTimeLeft] = useState("");
@@ -52,203 +42,37 @@ function Countdown({ deadline }) {
     );
 }
 
-function CategorySelect({ value, onChange, style }) {
-    return (
-        <select className={modalInput} style={style} value={value} onChange={onChange}>
-            {CATEGORIES.map(c => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-        </select>
-    );
-}
-
-function AddModal({ open, form, setForm, error, loading, onSubmit, onClose, styles }) {
-    if (!open) return null;
-    return (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10"
-                 style={styles.cardA}
-                 onKeyDown={e => e.key === "Enter" && onSubmit(e)}>
-                <h3 className="text-lg font-bold mb-2" style={styles.labelAlt}>Add Task</h3>
-                {error && <p className="text-red-500 font-semibold text-sm mb-2">{error}</p>}
-
-                <label className="text-xs font-semibold mt-1.5" 
-                    style={styles.labelAlt}>Title</label>
-                <input className={modalInput} style={styles.cardA}
-                    value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-
-                <label className="text-xs font-semibold mt-1.5" 
-                    style={styles.labelAlt}>Description (Optional)</label>
-                <textarea rows={3} className={modalInput} style={styles.cardA}
-                    value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                    onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
-
-                <label className="text-xs font-semibold mt-1.5" 
-                    style={styles.labelAlt}>Deadline (Optional)</label>
-                <input type="datetime-local" className={modalInput} style={styles.cardA}
-                    value={form.deadline}
-                    min={new Date().toISOString().slice(0, 16)}
-                    onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))} />
-                <label className="text-xs font-semibold mt-1.5" 
-                    style={styles.labelAlt}>Category (Optional)</label>
-                <CategorySelect value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} style={styles.cardA} />
-
-                <div className="flex gap-2.5 mt-4">
-                    <button onClick={onClose}
-                        className="flex-1 py-2.5 border-1 rounded-full font-semibold text-sm cursor-pointer transition-all duration-500 hover:bg-gray-200"
-                        style={styles.cardA}>Cancel</button>
-                    <button onClick={onSubmit} disabled={loading}
-                        className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-500 disabled:opacity-60"
-                        style={styles.accent}
-                        onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
-                        onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>
-                        {loading ? "Adding..." : "Add Task"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function EditModal({ taskId, form, setForm, onSave, onClose, styles }) {
-    if (!taskId) return null;
-    return (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative rounded-2xl p-8 w-full max-w-md shadow-xl flex flex-col gap-1.5 z-10"
-                 style={styles.surface}
-                 onKeyDown={e => e.key === "Enter" && onSave()}>
-                <h3 className="text-lg font-bold mb-2" style={{ color: "var(--accent)" }}>Edit Task</h3>
-
-                <label className="text-xs font-semibold mt-1.5" style={styles.labelAlt}>Title</label>
-                <input className={modalInput} style={styles.surface}
-                    value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
-
-                <label className="text-xs font-semibold mt-1.5" style={styles.labelAlt}>Description</label>
-                <textarea rows={3} className={modalInput} style={styles.surface}
-                    value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-                    onKeyDown={e => e.key === "Enter" && e.stopPropagation()} />
-
-                <label className="text-xs font-semibold mt-1.5" style={styles.labelAlt}>Deadline</label>
-                <input type="datetime-local" className={modalInput} style={styles.surface}
-                    value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))} />
-
-                <label className="text-xs font-semibold mt-1.5" style={styles.labelAlt}>Category</label>
-                <CategorySelect value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} style={styles.surface} />
-
-                <div className="flex gap-2.5 mt-4">
-                    <button onClick={onClose}
-                        className="flex-1 py-2.5 rounded-full border-1 font-semibold text-sm cursor-pointer transition-all duration-500 hover:bg-gray-200"
-                        style={styles.surface}>Cancel</button>
-                    <button onClick={onSave}
-                        className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-500"
-                        style={styles.accent}
-                        onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
-                        onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>Save</button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function DeleteModal({ taskId, tasks, onConfirm, onClose }) {
-    if (!taskId) return null;
-    const task = tasks.find(t => t.id === taskId);
-    return (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-            <div className="relative rounded-2xl p-8 w-full max-w-sm shadow-xl flex flex-col gap-4 z-10"
-                 style={{ background: "var(--surface)", color: "var(--text)" }}>
-                <h3 className="text-lg font-bold" style={{ color: "var(--danger)" }}>🗑️ Delete Task</h3>
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    Are you sure you want to delete <strong style={{ color: "var(--text)" }}>{task?.title}</strong>? This cannot be undone.
-                </p>
-                <div className="flex gap-2.5">
-                    <button onClick={onClose}
-                        className="flex-1 py-2.5 border-1 rounded-full font-semibold text-sm cursor-pointer transition-all duration-500 hover:bg-gray-200"
-                        style={{ background: "var(--surface)", color: "var(--text)" }}>Cancel</button>
-                    <button onClick={onConfirm}
-                        className="flex-1 py-2.5 rounded-full font-semibold text-sm text-white cursor-pointer transition-all duration-500"
-                        style={{ background: "var(--danger)" }}
-                        onMouseOver={e => e.currentTarget.style.background = "#dc2626"}
-                        onMouseOut={e => e.currentTarget.style.background = "var(--danger)"}>Delete</button>
-                </div>
-            </div>
-        </div>
-    );
-}
-//---category panel----------------------------------------
-function CategoryPanel({tasks, selected, onSelect, styles}){
-    const counts = {};
-    CATEGORIES.slice(1).forEach(c => {
-        counts[c.value] = tasks.filter(t=>t.category===c.value).length;            
-    });
-    const uncategorized = tasks.filter(t=>!t.category).length;
-    const items=[
-        {value:null, label: "All", icon: "📋", count:tasks.length},
-        ...CATEGORIES.slice(1).map(c=>({...c, icon: c.label.split(" ")[0], label:c.label.split(" ").slice(1).join(" "), count: counts[c.value]||0})),
-        {value:"uncategorized", label:"Uncategorized", icon:"◯", count:uncategorized}
-    ];
-    return(
-        <div className="flex flex-col gap-1 py-5 w-44 shrink-0">
-            <p className="text-xs font-semibold uppercase tracking-widest px-3 mb-2 opacity-50"
-            style={styles.calendar}>Categories</p>
-            {items.map(item => {
-                const isActive = selected === item.value;
-                return (
-                    <button
-                        key={String(item.value)}
-                        onClick={() => onSelect(isActive ? null : item.value)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-left text-sm font-medium cursor-pointer transition-all duration-500 hover:scale-[1.02]"
-                        style={isActive
-                            ? { background: "var(--accent)", color: "#fff" }
-                            : { background: "transparent", color: "var(--text)", opacity: 0.75 }
-                        }>
-                        <span style={{ fontSize: "14px" }}>{item.icon}</span>
-                        <span className="flex-1 truncate">{item.label}</span>
-                        <span className="text-xs font-mono opacity-70 ml-auto"
-                            style={{ color: isActive ? "#fff" : "var(--text)" }}>
-                            {item.count}
-                        </span>
-                    </button>
-                );
-            })}
-        </div>
-
-    )
-}
-
-
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
 export default function Index() {
-    const [tasks, setTasks]                      = useState([]);
-    const [clickedCard, setClickedCard]          = useState(null);
-    const [add, setAdd]                          = useState(false);
-    const [addForm, setAddForm]                  = useState({ title: "", description: "", deadline: defaultDeadline(), category: "" });
-    const [editingTask, setEditingTask]          = useState(null);
-    const [editForm, setEditForm]                = useState({ title: "", description: "", deadline: "", category: "" });
-    const [confirmDeleteId, setConfirmDeleteId]  = useState(null);
-    const [error, setError]                      = useState("");
-    const [loading, setLoading]                  = useState(false);
-    const [highlightedIds, setHighlightedIds]    = useState([]);
-    const [selectedDate, setSelectedDate]        = useState(null);
-    const [isFiltered, setIsFiltered]            = useState(false);
-    const [selectedCategory, setSelectedCategory]= useState(null);
-    const [allDone, setAllDone]                  = useState(false);
-    const [time, setTime]                        = useState(new Date().toLocaleTimeString());
-    const { isDark }                             = useContext(DarkModeContext);
-    const navigate                               = useNavigate();
+    const [tasks, setTasks]                       = useState([]);
+    const [clickedCard, setClickedCard]           = useState(null);
+    const [add, setAdd]                           = useState(false);
+    const [addForm, setAddForm]                   = useState({ title: "", description: "", deadline: defaultDeadline(), category: "" });
+    const [editingTask, setEditingTask]           = useState(null);
+    const [editForm, setEditForm]                 = useState({ title: "", description: "", deadline: "", category: "" });
+    const [confirmDeleteId, setConfirmDeleteId]   = useState(null);
+    const [error, setError]                       = useState("");
+    const [loading, setLoading]                   = useState(false);
+    const [highlightedIds, setHighlightedIds]     = useState([]);
+    const [selectedDate, setSelectedDate]         = useState(null);
+    const [isFiltered, setIsFiltered]             = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [allDone, setAllDone]                   = useState(false);
+    const [time, setTime]                         = useState(new Date().toLocaleTimeString());
+    const { isDark }                              = useContext(DarkModeContext);
+    const [currentPage, setCurrentPage]     = useState(1);
+    const [tasksPerPage, setTasksPerPage]   = useState(10);
+    const navigate                                = useNavigate();
 
     // ── Styles ──────────────────────────────────────────────
     const styles = {
-        bg:       { background: "var(--bg)",       color: "var(--text)" },
-        surface:  { background: "var(--surface)",  color: "var(--text)" },
-        cardA:    { background: "var(--card-a)",   color: "var(--card-a-text)" },
+        bg:       { background: "var(--bg)",              color: "var(--text)" },
+        surface:  { background: "var(--surface)",         color: "var(--text)" },
+        cardA:    { background: "var(--card-a)",          color: "var(--card-a-text)" },
         accent:   { background: "var(--accent)" },
-        calendar: { background: "var(--calendar-color)", color: "var(--card-a-text)" },
+        calendar: { background: "var(--calendar-color)",  color: "var(--card-a-text)" },
         label:    { color: "var(--card-b)" },
         labelAlt: { color: "var(--card-a-text)" },
     };
@@ -321,8 +145,8 @@ export default function Index() {
     }, [tasks]);
 
     // ── Handlers ─────────────────────────────────────────────
-    const handleToggle  = async (id) => { await toggleTask(id); refresh(); };
-    const handleDelete  = (id) => setConfirmDeleteId(id);
+    const handleToggle    = async (id) => { await toggleTask(id); refresh(); };
+    const handleDelete    = (id) => setConfirmDeleteId(id);
     const handleCardClick = (id) => setClickedCard(prev => prev === id ? null : id);
 
     const confirmDelete = async () => {
@@ -336,8 +160,8 @@ export default function Index() {
         setEditForm({
             title:       task.title || "",
             description: task.description || "",
-            deadline: task.deadline ? new Date(task.deadline).toISOString().slice(0, 16) : defaultDeadline(),
-            category:    task.category || ""
+            deadline:    task.deadline ? new Date(task.deadline).toISOString().slice(0, 16) : defaultDeadline(),
+            category:    task.category || "",
         });
     };
 
@@ -348,7 +172,7 @@ export default function Index() {
         try {
             await addTask(addForm.title, addForm.description, addForm.deadline, addForm.category);
             setAdd(false);
-            setAddForm({ title: "", description: "", deadline: "", category: "" });
+            setAddForm({ title: "", description: "", deadline: defaultDeadline(), category: "" });
             setError("");
             refresh();
         } catch (err) {
@@ -360,10 +184,10 @@ export default function Index() {
 
     const saveEdit = async () => {
         const task = tasks.find(t => t.id === editingTask);
-        if (editForm.title !== task.title)                                          await updateTaskTitle(editingTask, editForm.title);
-        if (editForm.description && editForm.description !== task.description)      await updateTaskDescription(editingTask, editForm.description);
-        if (editForm.deadline && editForm.deadline !== task.deadline)               await updateTaskDeadline(editingTask, editForm.deadline);
-        if (editForm.category && editForm.category !== task.category)               await updateTaskCategory(editingTask, editForm.category);
+        if (editForm.title !== task.title)                                     await updateTaskTitle(editingTask, editForm.title);
+        if (editForm.description && editForm.description !== task.description) await updateTaskDescription(editingTask, editForm.description);
+        if (editForm.deadline && editForm.deadline !== task.deadline)          await updateTaskDeadline(editingTask, editForm.deadline);
+        if (editForm.category && editForm.category !== task.category)          await updateTaskCategory(editingTask, editForm.category);
         setEditingTask(null);
         refresh();
     };
@@ -382,22 +206,20 @@ export default function Index() {
         setAllDone(matched.length > 0 && matched.every(t => t.completed));
     };
 
-    const clearFilter = () => { setHighlightedIds([]); setSelectedDate(null); setIsFiltered(false); };
+    const clearFilter         = () => { setHighlightedIds([]); setSelectedDate(null); setIsFiltered(false); };
+    const clearCategoryFilter = () => setSelectedCategory(null);
 
     // ── Derived ──────────────────────────────────────────────
-    const username     = getUsername();
-
-    const today = DAY_NAMES[new Date().getDay()];
+    const username = getUsername();
+    const today    = DAY_NAMES[new Date().getDay()];
 
     const visibleTasks = (() => {
         let list = isFiltered ? tasks.filter(t => highlightedIds.includes(t.id)) : tasks;
 
         if (selectedCategory !== null) {
-            if (selectedCategory === "uncategorized") {
-                list = list.filter(t => !t.category);
-            } else {
-                list = list.filter(t => t.category === selectedCategory);
-            }
+            list = selectedCategory === "uncategorized"
+                ? list.filter(t => !t.category)
+                : list.filter(t => t.category === selectedCategory);
         }
 
         return list.sort((a, b) => {
@@ -408,27 +230,31 @@ export default function Index() {
             return new Date(a.deadline) - new Date(b.deadline);
         });
     })();
+
+    // Reset to page 1 whenever the filtered list changes
+    useEffect(() => { setCurrentPage(1); }, [isFiltered, selectedCategory, selectedDate]);
+
+    const totalPages  = Math.ceil(visibleTasks.length / tasksPerPage);
+    const pagedTasks  = visibleTasks.slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage);
+
     // ── Render ───────────────────────────────────────────────
     return (
         <>
             <Navbar showLogout username={username} />
 
+            {/* main layout */}
+            <div className="flex justify-between px-7 gap-20 w-full overflow-x-auto" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 2em" }}>
 
-            <div className="flex flex-col items-center w-full"
-                 style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 2em" }}>
-
-                {/* Main layout */}
-                <div className="flex justify-between px-7 gap-20 w-full overflow-x-auto">
-                    {/* category panel */}
-                    <div className="flex flex-col gap-4 w-44 shrink-0">
-                        <CategoryPanel
-                            tasks={tasks}
-                            selected={selectedCategory}
-                            onSelect={setSelectedCategory}
-                            styles={styles.calendar}
-                        />
-                    {/* Task count */}
-                    <div className="mt-4 rounded-[14px] px-4 py-3.5 shadow-sm" style={styles.calendar}>
+                {/* Left sidebar — category panel + task stats */}
+                <div className="flex flex-col gap-4 w-44 shrink-0">
+                    <CategoryPanel
+                        tasks={tasks}
+                        selected={selectedCategory}
+                        onSelect={setSelectedCategory}
+                        styles={styles.calendar}
+                    />
+                    {/* task stats */}
+                    <div className="rounded-[14px] px-4 py-3.5 shadow-sm w-44 shrink-0" style={styles.calendar}>
                         <div className="text-center">
                             <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Total Tasks</span>
                             <div className="text-4xl font-bold font-mono mt-1">{visibleTasks.length}</div>
@@ -448,127 +274,157 @@ export default function Index() {
                             </div>
                         </div>
                     </div>
+                </div>
 
+                {/* Centre — task list */}
+                <div className="flex flex-col flex-1 gap-3 py-3">
+
+                    {/* Toolbar - category+day filters */}                    
+                    <div className="flex items-center gap-1 py-0.5">
+                        <button onClick={filterToday}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-105"
+                            style={{ background: "var(--accent)", color: "var(--card-b-text)" }}>
+                            📅 Today
+                        </button>
+
+                        {selectedDate && (
+                            <div className="flex items-center text-xs gap-1 font-semibold px-1"
+                                    style={{ color: "var(--card-a-text)" }}>
+                                {selectedDate}
+                                <button onClick={clearFilter} className="cursor-pointer ml-1"
+                                        style={{ color: "var(--danger)" }}>✕</button>
+                            </div>
+                        )}
+
+                        {selectedCategory && (
+                            <div className="flex items-center text-xs gap-1 font-semibold px-1"
+                                    style={{ color: "var(--card-a-text)" }}>
+                                {selectedCategory}
+                                <button onClick={clearCategoryFilter} className="cursor-pointer ml-1"
+                                        style={{ color: "var(--danger)" }}>✕</button>
+                            </div>
+                        )}
+
+                        <button onClick={() => setAdd(true)}
+                            className="w-8 h-8 rounded-full text-white text-md border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90 ml-auto"
+                            style={styles.accent}
+                            onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
+                            onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>+</button>
+                        
                     </div>
 
-                    {/* Left — tasks */}
-                    <div className="flex flex-col flex-1 gap-3">
-
-                        
-                        {/* Toolbar */}
-                        <div className="flex gap-1 py-0.5">
-                            <button onClick={filterToday}
-                                className="self-start text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-105"
-                                style={{ background: "var(--accent)", color: "var(--card-b-text)"}}>
-                                📅 Today
+                    {/* Per-page selector */}
+                    <div className="flex items-center gap-2 text-xs font-semibold"
+                        style={{ color: "var(--card-a-text)", opacity: 0.7 }}>
+                        <span>Show</span>
+                        {[5, 10, 20, 50].map(n => (
+                            <button
+                                key={n}
+                                onClick={() => { setTasksPerPage(n); setCurrentPage(1); }}
+                                className="px-2 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105"
+                                style={tasksPerPage === n
+                                    ? { background: "var(--accent)", color: "#fff" }
+                                    : { background: "transparent", color: "var(--card-a-text)", opacity: 0.6 }
+                                }>
+                                {n}
                             </button>
-                            {/* Filter bar */}
-                            {selectedDate && (
-                                <div className="flex items-center text-xs gap-1 font-semibold px-1" style={{ color: "var(--card-a-text)" }}>
-                                    {selectedDate}
-                                    <button onClick={clearFilter} className="cursor-pointer ml-2" style={{ color: "var(--danger)" }}>✕</button>
-                                </div>
-                            )}
-                            {selectedCategory && (
-                                <div className="flex items-center text-xs gap-1 font-semibold px-1" style={{ color: "var(--card-b)" }}>
-                                    {selectedCategory}
-                                    <button onClick={()=> setSelectedCategory(null)} className="cursor-pointer ml-2" style={{ color: "var(--danger)" }}>✕</button>
-                                </div>
-                            )}
-
-                            <button onClick={() => setAdd(true)}
-                                className="w-8 h-8 rounded-full text-white text-md border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90 ml-auto"
-                                style={styles.accent}
-                                onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
-                                onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>+</button>
-                        </div>
-
-
-                        {/* Empty state cards */}
-                        {selectedDate && highlightedIds.length === 0 && !allDone && (
-                            <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
-                                Nothing to do
-                            </div>
-                        )}
-                        {selectedDate && allDone && (
-                            <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
-                                All done for the day! 🎉
-                            </div>
-                        )}
-
-
-
-                        {/* Task cards */}
-                        {visibleTasks.map((task, i) => (
-                            <div key={task.id}
-                                className={`task-wrapper text-xl w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-500 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
-                                style={cardStyle[cardColors[i % 2]]}
-                                onClick={() => handleCardClick(task.id)}>
-
-                                <div className={`font-semibold pr-24 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
-                                    {task.title}
-                                </div>
-
-                                {task.deadline && !task.completed && (
-                                    <div className="mt-1"><Countdown deadline={task.deadline} /></div>
-                                )}
-
-                                <div className="absolute top-3 right-3 flex gap-1">
-                                    {[
-                                        { fn: () => handleToggle(task.id), icon: task.completed ? "☑️" : "✔️" },
-                                        { fn: () => openEdit(task),         icon: "✒️" },
-                                        { fn: () => handleDelete(task.id),  icon: "🚮" },
-                                    ].map(({ fn, icon }, idx) => (
-                                        <button key={idx}
-                                            onClick={e => { e.stopPropagation(); fn(); }}
-                                            className="bg-white/25 border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:bg-white/45 hover:scale-110">
-                                            {icon}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
-                                    <p>📝 {task.description || "No description"}</p>
-                                    <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
-                                    <p>🏷️ {task.category || "No category"}</p>
-                                </div>
-                            </div>
                         ))}
                     </div>
 
-                    {/* Right panel */}
-                    <div className="flex flex-col gap-5 w-70 py-13 shrink-0">
+                    {/* Empty state */}
+                    {selectedDate && highlightedIds.length === 0 && !allDone && (
+                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
+                            Nothing to do
+                        </div>
+                    )}
+                    {selectedDate && allDone && (
+                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
+                            All done for the day! 🎉
+                        </div>
+                    )}
 
-                        {/* Clock */}
-                        <div className="rounded-2xl" style={{ ...styles.calendar, padding: "2em" }}>
-                            <div className="text-sm" style={{ color: "var(--calendar-text)" }}>
-                                {new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()} {today}
+                    {/* Task cards */}
+                    {pagedTasks.map((task, i) => (
+                        <div key={task.id}
+                            className={`task-wrapper text-xl w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-500 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
+                            style={cardStyle[cardColors[i % 2]]}
+                            onClick={() => handleCardClick(task.id)}>
+
+                            <div className={`font-semibold pr-24 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
+                                {task.title}
                             </div>
-                            <div className="text-6xl font-medium leading-none pt-2 tracking-tight"
-                                 style={{ color: "var(--card-a-text)" }}>
-                                {time}
+
+                            {task.deadline && !task.completed && (
+                                <div className="mt-1"><Countdown deadline={task.deadline} /></div>
+                            )}
+
+                            <div className="absolute top-3 right-3 flex gap-1">
+                                {[
+                                    { fn: () => handleToggle(task.id), icon: task.completed ? "☑️" : "✔️" },
+                                    { fn: () => openEdit(task),         icon: "✒️" },
+                                    { fn: () => handleDelete(task.id),  icon: "🚮" },
+                                ].map(({ fn, icon }, idx) => (
+                                    <button key={idx}
+                                        onClick={e => { e.stopPropagation(); fn(); }}
+                                        className="bg-white/25 border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:bg-white/45 hover:scale-110">
+                                        {icon}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
+                                <p>📝 {task.description || "No description"}</p>
+                                <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
+                                <p>🏷️ {task.category || "No category"}</p>
                             </div>
                         </div>
+                    ))}
 
-                        {/* Calendar */}
-                        <Calendar tasks={tasks}
-                            onDayClick={(matched, day, done) => {
-                                setHighlightedIds(matched.map(t => t.id));
-                                setSelectedDate(day);
-                                setIsFiltered(day !== null);
-                                setAllDone(done);
-                            }}
-                        />
+                    {/* Pagination */}
+                    {visibleTasks.length > 0 && (
+                        <div className="flex items-center gap-2 text-xs font-semibold mt-2 px-1"
+                            style={{ color: "var(--card-a-text)" }}>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="px-2.5 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
+                                style={{ background: "var(--accent)", color: "#fff" }}>←</button>
 
-                    </div>
+                            <span style={{ opacity: 0.7 }}>
+                                {currentPage} of {totalPages || 1}
+                            </span>
+
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                className="px-2.5 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
+                                style={{ background: "var(--accent)", color: "#fff" }}>→</button>
+                        </div>
+                    )}
+
                 </div>
+
+                {/* Right panel */}
+                <RightPanel
+                    tasks={tasks}
+                    time={time}
+                    today={today}
+                    styles={styles}
+                    onDayClick={(matched, day, done) => {
+                        setHighlightedIds(matched.map(t => t.id));
+                        setSelectedDate(day);
+                        setIsFiltered(day !== null);
+                        setAllDone(done);
+                    }}
+                />
             </div>
 
             {/* Modals */}
             <AddModal
                 open={add} form={addForm} setForm={setAddForm}
                 error={error} loading={loading}
-                onSubmit={handleSubmit} onClose={() => { setAdd(false); setAddForm({ title: "", description: "", deadline: defaultDeadline(), category: "" }); setError(""); }}
+                onSubmit={handleSubmit}
+                onClose={() => { setAdd(false); setAddForm({ title: "", description: "", deadline: defaultDeadline(), category: "" }); setError(""); }}
                 styles={styles}
             />
             <EditModal
