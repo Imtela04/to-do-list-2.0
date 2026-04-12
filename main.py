@@ -160,9 +160,13 @@ def update_task_deadline(
     task = db.query(Todo).filter(Todo.id == task_id, Todo.owner_id == user.id).first()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    task.deadline = datetime.fromisoformat(deadline)
+    
+    parsed = datetime.fromisoformat(deadline)
+    
+    task.deadline = parsed
     db.commit()
     db.refresh(task)
+    
     return task
 
 @app.patch("/api/tasks/{task_id}/category")

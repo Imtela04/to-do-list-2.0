@@ -64,9 +64,10 @@ export default function Index() {
     const [allDone, setAllDone]                   = useState(false);
     const [time, setTime]                         = useState(new Date().toLocaleTimeString());
     const { isDark }                              = useContext(DarkModeContext);
-    const [currentPage, setCurrentPage]     = useState(1);
-    const [tasksPerPage, setTasksPerPage]   = useState(10);
+    const [currentPage, setCurrentPage]           = useState(1);
+    const [tasksPerPage, setTasksPerPage]         = useState(10);
     const navigate                                = useNavigate();
+    const [search, setSearch]                     = useState("");
 
 
     const cardColors = isDark ? ["blue", "purple"] : ["yellow", "purple"];
@@ -207,6 +208,15 @@ export default function Index() {
                 : list.filter(t => t.category === selectedCategory);
         }
 
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            list = list.filter(t =>
+                t.title?.toLowerCase().includes(q) ||
+                t.description?.toLowerCase().includes(q) ||
+                t.category?.toLowerCase().includes(q)
+            );
+        }
+
         return list.sort((a, b) => {
             if (a.completed !== b.completed) return Number(a.completed) - Number(b.completed);
             if (!a.deadline && !b.deadline) return 0;
@@ -217,7 +227,7 @@ export default function Index() {
     })();
 
     // Reset to page 1 whenever the filtered list changes
-    useEffect(() => { setCurrentPage(1); }, [isFiltered, selectedCategory, selectedDate]);
+    useEffect(() => { setCurrentPage(1); }, [isFiltered, selectedCategory, selectedDate, search]);
 
     const totalPages  = Math.ceil(visibleTasks.length / tasksPerPage);
     const pagedTasks  = visibleTasks.slice((currentPage - 1) * tasksPerPage, currentPage * tasksPerPage);
@@ -266,8 +276,11 @@ export default function Index() {
                     {/* Centre — task list */}
                     <div className="flex flex-col flex-1 gap-3 py-3">
 
-                        {/* Toolbar - category+day filters */}                    
-                        <div className="flex items-center gap-1 py-0.5">
+                    {/* Toolbar */}
+                    <div className="flex items-center justify-between py-0.5 gap-2">
+
+                        {/* Left — Today + filter tags */}
+                        <div className="flex items-center gap-1 flex-wrap">
                             <button onClick={filterToday}
                                 className="text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-105"
                                 style={{ background: "var(--accent)", color: "var(--card-b-text)" }}>
@@ -276,48 +289,87 @@ export default function Index() {
 
                             {selectedDate && (
                                 <div className="flex items-center text-xs gap-1 font-semibold px-1"
-                                        style={{ color: "var(--card-a-text)" }}>
+                                    style={{ color: "var(--card-a-text)" }}>
                                     {selectedDate}
                                     <button onClick={clearFilter} className="cursor-pointer ml-1"
-                                            style={{ color: "var(--danger)" }}>✕</button>
+                                        style={{ color: "var(--danger)" }}>✕</button>
                                 </div>
                             )}
 
                             {selectedCategory && (
                                 <div className="flex items-center text-xs gap-1 font-semibold px-1"
-                                        style={{ color: "var(--card-a-text)" }}>
+                                    style={{ color: "var(--card-a-text)" }}>
                                     {selectedCategory}
                                     <button onClick={clearCategoryFilter} className="cursor-pointer ml-1"
-                                            style={{ color: "var(--danger)" }}>✕</button>
+                                        style={{ color: "var(--danger)" }}>✕</button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Right — search + per-page + pagination + add */}
+                        <div className="flex items-center gap-2 shrink-0">
+
+                            {/* Search */}
+                            <div className="flex items-center gap-1">
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                                    placeholder="🔍 Search..."
+                                    className="px-3 py-1 rounded-full text-xs font-mono outline-none border transition-all duration-300"
+                                    style={{
+                                        background: "var(--surface)",
+                                        color: "var(--text)",
+                                        borderColor: search ? "var(--accent)" : "transparent",
+                                        width: "140px"
+                                    }}
+                                />
+                                {search && (
+                                    <button onClick={() => setSearch("")} className="text-xs cursor-pointer"
+                                        style={{ color: "var(--danger)" }}>✕</button>
+                                )}
+                            </div>
+
+                            {/* Per-page */}
+                            <div className="flex items-center gap-1 text-xs font-semibold"
+                                style={{ color: "var(--card-a-text)", opacity: 0.7 }}>
+                                <span className="opacity-60">Show</span>
+                                {[5, 10, 20, 50].map(n => (
+                                    <button key={n}
+                                        onClick={() => { setTasksPerPage(n); setCurrentPage(1); }}
+                                        className="px-2 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105"
+                                        style={tasksPerPage === n
+                                            ? { background: "var(--accent)", color: "#fff" }
+                                            : { background: "transparent", color: "var(--card-a-text)", opacity: 0.6 }
+                                        }>{n}</button>
+                                ))}
+                            </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-1 text-xs font-semibold"
+                                    style={{ color: "var(--card-a-text)" }}>
+                                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-2 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
+                                        style={{ background: "var(--accent)", color: "#fff" }}>←</button>
+                                    <span style={{ opacity: 0.7 }}>{currentPage}/{totalPages}</span>
+                                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-2 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
+                                        style={{ background: "var(--accent)", color: "#fff" }}>→</button>
                                 </div>
                             )}
 
+                            {/* Add button */}
                             <button onClick={() => setAdd(true)}
-                                className="w-8 h-8 rounded-full text-white text-md border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90 ml-auto"
+                                className="w-8 h-8 rounded-full text-white text-md border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90"
                                 style={styles.accent}
                                 onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
                                 onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>+</button>
-                            
                         </div>
 
-                        {/* Per-page selector */}
-                        <div className="flex items-center gap-2 text-xs font-semibold"
-                            style={{ color: "var(--card-a-text)", opacity: 0.7 }}>
-                            <span>Show</span>
-                            {[5, 10, 20, 50].map(n => (
-                                <button
-                                    key={n}
-                                    onClick={() => { setTasksPerPage(n); setCurrentPage(1); }}
-                                    className="px-2 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105"
-                                    style={tasksPerPage === n
-                                        ? { background: "var(--accent)", color: "#fff" }
-                                        : { background: "transparent", color: "var(--card-a-text)", opacity: 0.6 }
-                                    }>
-                                    {n}
-                                </button>
-                            ))}
-                        </div>
-
+                    </div>
                         {/* Empty state */}
                         {selectedDate && highlightedIds.length === 0 && !allDone && (
                             <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
@@ -349,11 +401,11 @@ export default function Index() {
                                     {[
                                         { fn: () => handleToggle(task.id), icon: task.completed ? "☑️" : "✔️" },
                                         { fn: () => openEdit(task),         icon: "✒️" },
-                                        { fn: () => handleDelete(task.id),  icon: "🚮" },
+                                        { fn: () => handleDelete(task.id),  icon: "❌" },
                                     ].map(({ fn, icon }, idx) => (
                                         <button key={idx}
                                             onClick={e => { e.stopPropagation(); fn(); }}
-                                            className="border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:scale-110" style={{ background: "var(--calendar-color)" }}>
+                                            className="border-none px-0.2 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:scale-110" >
                                             {icon}
                                         </button>
                                     ))}
