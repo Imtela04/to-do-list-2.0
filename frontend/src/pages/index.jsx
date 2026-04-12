@@ -386,13 +386,6 @@ export default function Index() {
 
     // ── Derived ──────────────────────────────────────────────
     const username     = getUsername();
-    const greeting     = (() => {
-        const h = new Date().getHours();
-        if (h >= 5  && h < 12) return { emoji: "🌅", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
-        if (h >= 12 && h < 17) return { emoji: "🌤️", text: "Good Afternoon", sub: "Keep up the momentum!" };
-        if (h >= 17 && h < 24) return { emoji: "🌇", text: "Good Evening",   sub: "You're almost there!" };
-        return                         { emoji: "🌙", text: "Good Night",     sub: "Recharge for tomorrow." };
-    })();
 
     const today = DAY_NAMES[new Date().getDay()];
 
@@ -419,22 +412,15 @@ export default function Index() {
     return (
         <>
             <Navbar showLogout username={username} />
-            {/* Greeting */}
-            <div className=" flex flex-col text-center py-4 px-2 gap-2 w-full" style={{background:"var(--card-a)", color: "var(--card-a-text)" }}>
-                <h1 className="text-3xl font-bold">
-                    {greeting.emoji} {greeting.text}, {username}
-                </h1>
-                <p className="text-lg">{greeting.sub}</p>
-            </div>
 
 
             <div className="flex flex-col items-center w-full"
                  style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 2em" }}>
 
                 {/* Main layout */}
-                <div className="flex justify-between px-7 gap-20 w-full md:flex-row flex-col">
+                <div className="flex justify-between px-7 gap-20 w-full overflow-x-auto">
                     {/* category panel */}
-                    <div>
+                    <div className="flex flex-col gap-4 w-44 shrink-0">
                         <CategoryPanel
                             tasks={tasks}
                             selected={selectedCategory}
@@ -470,7 +456,7 @@ export default function Index() {
 
                         
                         {/* Toolbar */}
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 py-0.5">
                             <button onClick={filterToday}
                                 className="self-start text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-105"
                                 style={{ background: "var(--accent)", color: "var(--card-b-text)"}}>
@@ -478,7 +464,7 @@ export default function Index() {
                             </button>
                             {/* Filter bar */}
                             {selectedDate && (
-                                <div className="flex items-center text-xs gap-1 font-semibold px-1" style={{ color: "var(--card-b)" }}>
+                                <div className="flex items-center text-xs gap-1 font-semibold px-1" style={{ color: "var(--card-a-text)" }}>
                                     {selectedDate}
                                     <button onClick={clearFilter} className="cursor-pointer ml-2" style={{ color: "var(--danger)" }}>✕</button>
                                 </div>
@@ -551,7 +537,7 @@ export default function Index() {
                     </div>
 
                     {/* Right panel */}
-                    <div className="flex flex-col gap-5 w-70 py-13">
+                    <div className="flex flex-col gap-5 w-70 py-13 shrink-0">
 
                         {/* Clock */}
                         <div className="rounded-2xl" style={{ ...styles.calendar, padding: "2em" }}>

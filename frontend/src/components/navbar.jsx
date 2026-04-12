@@ -13,18 +13,41 @@ export default function Navbar({ showLogout = false, username = null }) {
         navigate("/login");
     };
 
+    const greeting     = (() => {
+        const h = new Date().getHours();
+        if (h >= 5  && h < 12) return { emoji: "🌅", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
+        if (h >= 12 && h < 17) return { emoji: "🌤️", text: "Good Afternoon", sub: "Keep up the momentum!" };
+        if (h >= 17 && h < 24) return { emoji: "🌇", text: "Good Evening",   sub: "You're almost there!" };
+        return                         { emoji: "🌙", text: "Good Night",     sub: "Recharge for tomorrow." };
+    })();
+
+
     return (
         <div className="static w-full"
             style={{background:"var(--card-a)",padding:"2em 4em"}}>
-                <h2 className="font-bold text-4xl" style={{color:"var(--card-b)"}}>what-do</h2>
+                <div className="flex">
+                    <h2 className="font-bold text-4xl" style={{color:"var(--card-b)"}}>what-do</h2>
+
+                    {/* Greeting */}
+                    <div className="flex flex-col text-center py-4 px-2 gap-2 w-full typed" style={{background:"var(--card-a)", color: "var(--card-a-text)" }}>
+                        <h1 className="text-3xl font-bold">
+                            {greeting.emoji} {greeting.text}, {username}
+                        </h1>
+                        <p className="text-lg">{greeting.sub}</p>
+                    </div>
+                </div>
+                
             <div className="absolute top-0 right-2 z-50 flex items-center gap-2 py-2 font-semibold text-sm"
                 style={{ color: "var(--card-b)" }}>
+                
                 <button
                     onClick={() => setIsDark(prev => !prev)}
                     className="bg-transparent border-none text-xl cursor-pointer transition-transform duration-500 hover:rotate-12 hover:scale-125"
                 >
                     {isDark ? "☀️" : "🌙"}
                 </button>
+            
+
 
                 {/* user dropdown */}
                 {showLogout && username && (
