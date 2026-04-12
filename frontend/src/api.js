@@ -48,7 +48,7 @@ export async function getTasks() {
 }
 
 export async function addTask(title,description,deadline,category) {
-  //console.log("addTask called with:", { title, description, deadline, category }); 
+  ////console.log("addTask called with:", { title, description, deadline, category }); 
 
   const res = await fetch(`${BASE}/api/tasks`, {
     method: "POST",

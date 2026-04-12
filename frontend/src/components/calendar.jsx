@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { MONTH_NAMES } from "../constants";
 
 export default function Calendar({ tasks = [], onDayClick }) {
     const now         = new Date();
@@ -7,8 +8,6 @@ export default function Calendar({ tasks = [], onDayClick }) {
     const today       = now.getDate();
     const [selected, setSelected] = useState(null);
 
-    const monthNames = ["January","February","March","April","May","June",
-                        "July","August","September","October","November","December"];
 
     const firstDay    = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -51,14 +50,14 @@ export default function Calendar({ tasks = [], onDayClick }) {
         }
         const matched = deadlineMap[d] || [];
         const allDone = matched.length > 0 && matched.every(t=>t.completed);
-        const label = `${monthNames[month].slice(0, 3)} ${String(d).padStart(2, "0")}`;
+        const label = `${MONTH_NAMES[month].slice(0, 3)} ${String(d).padStart(2, "0")}`;
         if (onDayClick) onDayClick(matched, label, allDone);
     };
 
     return (
         <div className="rounded-2xl p-5 transition-colors duration-500" style={{ backgroundColor: "var(--calendar-color)" }}>
             <div className="text-base font-bold mb-3" style={{ color: "var(--calendar-text)" }}>
-                {monthNames[month]} {year}
+                {MONTH_NAMES[month]} {year}
             </div>
             <div className="grid grid-cols-7 gap-1 text-center pb-2">
                 {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => (

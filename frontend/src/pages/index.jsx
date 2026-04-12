@@ -6,41 +6,43 @@ import Navbar from "../components/navbar";
 import RightPanel from "../components/panels/right-panel";
 import CategoryPanel from "../components/panels/category-panel";
 import { AddModal, EditModal, DeleteModal } from "../components/modals";
+import { Countdown } from "../components/countdown"
+import { MONTH_NAMES, DAY_NAMES } from "../constants";
+import { defaultDeadline } from "../constants";
+// ── Auth ─────────────────────────────────────────────────
+const getUsername = () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return null;
+    try { return JSON.parse(atob(token.split(".")[1])).sub; }
+    catch { return null; }
+};
 
-// ============================================================
-// CONSTANTS
-// ============================================================
-const MONTH_NAMES    = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const DAY_NAMES      = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const defaultDeadline = () => new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16);
+const isTokenExpired = () => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return true;
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        return payload.exp * 1000 < Date.now();
+    } catch { return true; }
+};
 
-// ============================================================
-// COUNTDOWN (stays here — only used by task cards)
-// ============================================================
-function Countdown({ deadline }) {
-    const [timeLeft, setTimeLeft] = useState("");
-    useEffect(() => {
-        const calc = () => {
-            const diff = new Date(deadline) - new Date();
-            if (diff <= 0) { setTimeLeft("Overdue"); return; }
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            if (d > 0)      setTimeLeft(`${d}d ${h}h ${m}m`);
-            else if (h > 0) setTimeLeft(`${h}h ${m}m ${s}s`);
-            else            setTimeLeft(`${m}m ${s}s`);
-        };
-        calc();
-        const interval = setInterval(calc, 1000);
-        return () => clearInterval(interval);
-    }, [deadline]);
-    return (
-        <span className="text-xs font-mono font-semibold" style={{color: timeLeft === "Overdue" ? "#ef4444" : "inherit"}}>
-            ⏱ {timeLeft}
-        </span>
-    );
-}
+// ── Styles ──────────────────────────────────────────────
+const styles = {
+    bg:       { background: "var(--bg)",              color: "var(--text)" },
+    surface:  { background: "var(--surface)",         color: "var(--text)" },
+    cardA:    { background: "var(--card-a)",          color: "var(--card-a-text)" },
+    accent:   { background: "var(--accent)" },
+    calendar: { background: "var(--calendar-color)",  color: "var(--card-a-text)" },
+    label:    { color: "var(--card-b)" },
+    labelAlt: { color: "var(--card-a-text)" },
+};
+
+const cardStyle = {
+    yellow: { background: "var(--card-a)",    color: "var(--card-a-text)" },
+    purple: { background: "var(--card-b)",    color: "var(--card-b-text)" },
+    blue:   { background: "var(--card-blue)", color: "var(--card-blue-text)" },
+};
+
 
 // ============================================================
 // MAIN COMPONENT
@@ -66,46 +68,18 @@ export default function Index() {
     const [tasksPerPage, setTasksPerPage]   = useState(10);
     const navigate                                = useNavigate();
 
-    // ── Styles ──────────────────────────────────────────────
-    const styles = {
-        bg:       { background: "var(--bg)",              color: "var(--text)" },
-        surface:  { background: "var(--surface)",         color: "var(--text)" },
-        cardA:    { background: "var(--card-a)",          color: "var(--card-a-text)" },
-        accent:   { background: "var(--accent)" },
-        calendar: { background: "var(--calendar-color)",  color: "var(--card-a-text)" },
-        label:    { color: "var(--card-b)" },
-        labelAlt: { color: "var(--card-a-text)" },
-    };
-
-    const cardStyle = {
-        yellow: { background: "var(--card-a)",    color: "var(--card-a-text)" },
-        purple: { background: "var(--card-b)",    color: "var(--card-b-text)" },
-        blue:   { background: "var(--card-blue)", color: "var(--card-blue-text)" },
-    };
 
     const cardColors = isDark ? ["blue", "purple"] : ["yellow", "purple"];
 
-    // ── Auth ─────────────────────────────────────────────────
-    const getUsername = () => {
-        const token = localStorage.getItem("access_token");
-        if (!token) return null;
-        try { return JSON.parse(atob(token.split(".")[1])).sub; }
-        catch { return null; }
-    };
-
-    const isTokenExpired = () => {
-        const token = localStorage.getItem("access_token");
-        if (!token) return true;
-        try {
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            return payload.exp * 1000 < Date.now();
-        } catch { return true; }
-    };
 
     // ── Effects ──────────────────────────────────────────────
     const refresh = async () => {
         const data = await getTasks();
-        if (data) setTasks(data);
+        if (data){
+            // //console.log("tasks from api: ", data.map(t=>({title:t.title, deadline:t.deadline})));
+            setTasks(data);
+        } 
+        
     };
 
     useEffect(() => {
@@ -160,11 +134,10 @@ export default function Index() {
         setEditForm({
             title:       task.title || "",
             description: task.description || "",
-            deadline:    task.deadline ? new Date(task.deadline).toISOString().slice(0, 16) : defaultDeadline(),
-            category:    task.category || "",
+            deadline:    task.deadline ? task.deadline.slice(0,16) : "",
+            category:    task.category || ""
         });
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!addForm.title.trim()) { setError("Title is required"); return; }
@@ -182,16 +155,28 @@ export default function Index() {
         }
     };
 
+
     const saveEdit = async () => {
         const task = tasks.find(t => t.id === editingTask);
-        if (editForm.title !== task.title)                                     await updateTaskTitle(editingTask, editForm.title);
-        if (editForm.description && editForm.description !== task.description) await updateTaskDescription(editingTask, editForm.description);
-        if (editForm.deadline && editForm.deadline !== task.deadline)          await updateTaskDeadline(editingTask, editForm.deadline);
-        if (editForm.category && editForm.category !== task.category)          await updateTaskCategory(editingTask, editForm.category);
+        //console.log("editForm.deadline:", editForm.deadline);
+        //console.log("task.deadline:", task.deadline);
+        //console.log("task.deadline sliced:", task.deadline ? task.deadline.slice(0, 16) : "");
+
+        if (editForm.title !== task.title) 
+            await updateTaskTitle(editingTask, editForm.title);
+        if (editForm.description && editForm.description !== task.description) 
+            await updateTaskDescription(editingTask, editForm.description);
+        if (editForm.deadline) {
+            // ✅ compare against sliced version of task deadline for consistency
+            const taskDeadline = task.deadline ? task.deadline.slice(0,16) : "";
+            if (editForm.deadline !== taskDeadline)
+                await updateTaskDeadline(editingTask, editForm.deadline);
+        }
+        if (editForm.category && editForm.category !== task.category) 
+            await updateTaskCategory(editingTask, editForm.category);
         setEditingTask(null);
         refresh();
     };
-
     const filterToday = () => {
         const now        = new Date();
         const todayLabel = `${MONTH_NAMES[now.getMonth()]} ${String(now.getDate()).padStart(2, "0")}`;
@@ -392,7 +377,7 @@ export default function Index() {
                                     className="px-2.5 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
                                     style={{ background: "var(--accent)", color: "#fff" }}>←</button>
 
-                                <span style={{ opacity: 0.7 }}>
+                                <span style={{color: "var(--calendar-color)" , opacity: 1 }}>
                                     {currentPage} of {totalPages || 1}
                                 </span>
 
