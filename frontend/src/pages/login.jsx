@@ -30,11 +30,11 @@ export default function Login() {
     const inputClass = "w-full px-3.5 py-2.5 my-2 rounded-xl border border-gray-300 text-sm outline-none font-mono transition-colors duration-500 focus:border-violet-600"
 
     return (
-        <><Navbar />
+        <>
 
         <div className="flex justify-center items-center min-h-screen" style={{ background: "var(--bg)", color: "var(--text)" }}>
 
-            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-9 text-center" style={{ background: "var(--surface)" }}>
+            <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-9 text-center" style={{ background: "var(--calendar-color)" }}>
                 <h1 className="text-2xl font-bold mb-5" style={{ color: "var(--accent)" }}>Login</h1>
 
                 {error && <p className="text-red-500 font-semibold text-sm mb-3">Invalid Credentials</p>}

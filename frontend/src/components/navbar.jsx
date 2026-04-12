@@ -23,13 +23,13 @@ export default function Navbar({ showLogout = false, username = null }) {
 
 
     return (
-        <div className="static w-full"
+        <div className="static w-full bg-transparent"
             style={{background:"transparent",padding:"2em 4em"}}>
                 <div className="flex ">
                     <h2 className="font-bold text-4xl" style={{color:"var(--card-b)"}}>what-do</h2>
 
                     {/* Greeting */}
-                    <div className="flex flex-col text-center py-4 px-2 gap-2 w-full typed" style={{background:"transparent", color: "var(--card-blue-text)" }}>
+                    <div className="flex flex-col text-center py-4 px-2 gap-2 w-full" style={{color: "var(--card-a-text)" }}>
                         <h1 className="text-3xl font-bold">
                             {greeting.emoji} {greeting.text}, {username}
                         </h1>
@@ -64,7 +64,7 @@ export default function Navbar({ showLogout = false, username = null }) {
                                 <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
                                 <div
                                     className="absolute right-0 mt-2 w-44 rounded-xl shadow-lg overflow-hidden z-50"
-                                    style={{ background: "var(--surface)", border: "1px solid rgba(0,0,0,0.08)" }}
+                                    style={{ background: "var(--calendar-color)", border: "1px solid rgba(0,0,0,0.08)" }}
                                 >
                                     <div className="px-4 py-3 text-xs font-semibold border-b"
                                         style={{ color: "var(--text-muted)", borderColor: "rgba(0,0,0,0.08)" }}>
@@ -73,7 +73,8 @@ export default function Navbar({ showLogout = false, username = null }) {
                                     </div>
                                     <button
                                         onClick={handleLogout}
-                                        className="w-full text-left px-4 py-2.5 text-sm font-semibold cursor-pointer transition-all duration-500 hover:bg-red-50 text-red-500"
+                                        className="w-full text-left px-4 py-2.5 text-sm font-semibold cursor-pointer transition-all duration-500 hover:bg-red-50"
+                                        style={{color:"var(--danger)"}}
                                     >
                                         ◯ Logout
                                     </button>

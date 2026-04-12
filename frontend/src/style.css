@@ -1,17 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-@theme {
-    --color-accent: #7c3aed;
-    --color-accent-hover: #c4aaee;
-    --color-danger: #ef4444;
-    --color-card-a: #e8deff;
-    --color-card-b: #7c3aed;
-    --color-card-blue: #1e3a5f;
-    --color-surface: #ffffff;
-    --color-bg: #f0eeff;
-    --color-calendar-color: #d2cae6;
-}
 
 :root {
     --bg:             linear-gradient(to bottom, #fae9bc, #fabde5, #65468a);
@@ -57,8 +46,7 @@ html {
     background: var(--bg);
     min-height: 100vh;
     background-attachment: fixed;
-    transition-property: all;
-    transition-duration: 500;
+    transition: background 0.5s ease;
 }
 
 body {

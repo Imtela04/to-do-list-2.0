@@ -240,12 +240,11 @@ export default function Index() {
     // ── Render ───────────────────────────────────────────────
     return (
         <>
-            <Navbar showLogout username={username} />
 
             {/* main layout */}
             <div className="flex flex-col items-center w-full"
-                style={{ color: "var(--text)", padding: "1em 2em" }}>
-
+                style={{ background: "var(--bg)", color: "var(--text)", padding: "1em 2em", minHeight: "100vh" }}>
+                <Navbar showLogout username={username} />
                 <div className="flex justify-between px-7 gap-20 w-full overflow-x-auto">
 
                     {/* Left sidebar — category panel + task stats */}
@@ -369,7 +368,7 @@ export default function Index() {
                                     ].map(({ fn, icon }, idx) => (
                                         <button key={idx}
                                             onClick={e => { e.stopPropagation(); fn(); }}
-                                            className="bg-calendar-color border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:bg-white/45 hover:scale-110">
+                                            className="border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:scale-110" style={{ background: "var(--calendar-color)" }}>
                                             {icon}
                                         </button>
                                     ))}
