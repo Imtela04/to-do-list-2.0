@@ -33,12 +33,13 @@ export default function App() {
 
     return (
         <DarkModeContext.Provider value={{ isDark, setIsDark }}>
-            <Routes>
-                <Route path="/login"    element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/"         element={<PrivateRoute><Index /></PrivateRoute>} />
-                {/* <Route path="/add"      element={<PrivateRoute><Add /></PrivateRoute>} /> */}
-            </Routes>
+            <div style={{ minHeight: "100vh" }}>
+                <Routes>
+                    <Route path="/login"    element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/"         element={<PrivateRoute><Index /></PrivateRoute>} />
+                </Routes>
+            </div>
         </DarkModeContext.Provider>
     );
 }

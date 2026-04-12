@@ -13,45 +13,59 @@
     --color-calendar-color: #d2cae6;
 }
 
-/* CSS variables for runtime dark mode switching */
 :root {
-    --bg:           linear-gradient(to bottom, var(--card-a), #905ea3, #905ea3);
-    --surface:      #ffffff;
-    --text:         #1a1a2e;
-    --text-muted:   #666;
-    --accent:       #997ec7;
-    --accent-hover: #c4aaee;
-    --card-a:       #f3f2f8;
-    --card-a-text:  #6c5b8a;
-    --card-b:       #6c5b8a;
-    --card-b-text:  #f5f3fa;
-    --card-blue:    #8a75af;
+    --bg:             linear-gradient(to bottom, #fae9bc, #fabde5, #65468a);
+    --surface:        #ffffff;
+    --text:           #1a1a2e;
+    --text-muted:     #666;
+    --accent:         #997ec7;
+    --accent-hover:   #c4aaee;
+    --card-a:         #fce7d9;
+    --card-a-text:    #6c5b8a;
+    --card-b:         #cfb7f7;
+    --card-b-text:    var(--card-a-text);
+    --card-blue:      #8a75af;
     --card-blue-text: #d2cae6;
-    --clock-color:  #6c5b8a;
-    --calendar-color: #f2effc;
-    --calendar-text: #6c5b8a;
-
-    --clock-text:   #e8deff;
-    --danger:       #ef4444;
+    --calendar-color: var(--card-a);
+    --calendar-text:  #6c5b8a;
+    --clock-color:    #6c5b8a;
+    --clock-text:     #e8deff;
+    --danger:         #ef4444;
 }
 
 .dark {
-    --bg:           linear-gradient(to bottom, var(--card-a), #22044b, #22044b);
-    --surface:      #1a1828;
-    --text:         #ede9fe;
-    --text-muted:   #a78bfa;
-    --clock-color:  #6c5b8a;
-    --clock-text:   #ede9fe;
-    --calendar-color: #4a2080;
-    --calendar-text: #e0f2fe;
-    --card-a:       #1a1828;
-    --card-a-text:  #ede9fe;
-    --card-b:       #4a2080;
-    --card-b-text:  #ede9fe;
+    --bg:             linear-gradient(to bottom, #040118, #351032, #743339);
+    --surface:        #656179;
+    --text:           #ede9fe;
+    --text-muted:     #a78bfa;
+    --accent:         #7c3aed;
+    --accent-hover:   #9d6eef;
+    --card-a:         #1a1828;
+    --card-a-text:    #ede9fe;
+    --card-b:         #331246;
+    --card-b-text:    #ede9fe;
+    --card-blue:      #110836;
+    --card-blue-text: #d2cae6;
+    --calendar-color: var(--card-blue);
+    --calendar-text:  #e0f2fe;
+    --clock-color:    #6c5b8a;
+    --clock-text:     #ede9fe;
+    --danger:         #ef4444;
 }
 
-body{
+html {
+    background: var(--bg);
+    min-height: 100vh;
+    background-attachment: fixed;
+    transition-property: all;
+    transition-duration: 500;
+}
+
+body {
     font-family: monospace;
+    min-height: 100vh;
+    background: transparent;
+    margin: 0;
 }
 
 .task-preview {

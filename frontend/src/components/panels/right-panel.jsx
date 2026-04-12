@@ -9,7 +9,7 @@ export default function RightPanel({ tasks, time, today, styles, onDayClick }) {
                 <div className="text-sm" style={{ color: "var(--calendar-text)" }}>
                     {new Date().getDate()}/{new Date().getMonth() + 1}/{new Date().getFullYear()} {today}
                 </div>
-                <div className="text-4xl font-medium tracking-tight whitespace-nowrap"
+                <div className="text-4xl font-medium tracking-tight whitespace-nowrap transition-all duration-500"
                      style={{ color: "var(--card-a-text)" }}>
                     {time}
                 </div>

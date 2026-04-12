@@ -24,12 +24,12 @@ export default function Navbar({ showLogout = false, username = null }) {
 
     return (
         <div className="static w-full"
-            style={{background:"var(--card-a)",padding:"2em 4em"}}>
+            style={{background:"transparent",padding:"2em 4em"}}>
                 <div className="flex ">
                     <h2 className="font-bold text-4xl" style={{color:"var(--card-b)"}}>what-do</h2>
 
                     {/* Greeting */}
-                    <div className="flex flex-col text-center py-4 px-2 gap-2 w-full typed" style={{background:"var(--card-a)", color: "var(--card-a-text)" }}>
+                    <div className="flex flex-col text-center py-4 px-2 gap-2 w-full typed" style={{background:"transparent", color: "var(--card-blue-text)" }}>
                         <h1 className="text-3xl font-bold">
                             {greeting.emoji} {greeting.text}, {username}
                         </h1>

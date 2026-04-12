@@ -36,7 +36,7 @@ function Countdown({ deadline }) {
         return () => clearInterval(interval);
     }, [deadline]);
     return (
-        <span className={`text-xs font-mono font-semibold ${timeLeft === "Overdue" ? "text-red-500" : "text-blue-950"}`}>
+        <span className="text-xs font-mono font-semibold" style={{color: timeLeft === "Overdue" ? "#ef4444" : "inherit"}}>
             ⏱ {timeLeft}
         </span>
     );
@@ -243,181 +243,188 @@ export default function Index() {
             <Navbar showLogout username={username} />
 
             {/* main layout */}
-            <div className="flex justify-between px-7 gap-20 w-full overflow-x-auto" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100vh", padding: "1em 2em" }}>
+            <div className="flex flex-col items-center w-full"
+                style={{ color: "var(--text)", padding: "1em 2em" }}>
 
-                {/* Left sidebar — category panel + task stats */}
-                <div className="flex flex-col gap-4 w-44 shrink-0">
-                    <CategoryPanel
-                        tasks={tasks}
-                        selected={selectedCategory}
-                        onSelect={setSelectedCategory}
-                        styles={styles.calendar}
-                    />
-                    {/* task stats */}
-                    <div className="rounded-[14px] px-4 py-3.5 shadow-sm w-44 shrink-0" style={styles.calendar}>
-                        <div className="text-center">
-                            <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Total Tasks</span>
-                            <div className="text-4xl font-bold font-mono mt-1">{visibleTasks.length}</div>
-                        </div>
-                        <div className="flex justify-center gap-8 mt-3">
+                <div className="flex justify-between px-7 gap-20 w-full overflow-x-auto">
+
+                    {/* Left sidebar — category panel + task stats */}
+                    <div className="flex flex-col gap-4 w-44 shrink-0">
+                        <CategoryPanel
+                            tasks={tasks}
+                            selected={selectedCategory}
+                            onSelect={setSelectedCategory}
+                            styles={styles.calendar}
+                        />
+                        {/* task stats */}
+                        <div className="rounded-[14px] px-4 py-3.5 shadow-sm w-44 shrink-0" style={styles.calendar}>
                             <div className="text-center">
-                                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Completed</span>
-                                <div className="text-3xl font-bold font-mono mt-1 text-green-500">
-                                    {visibleTasks.filter(t => t.completed).length}
-                                </div>
+                                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Total Tasks</span>
+                                <div className="text-4xl font-bold font-mono mt-1">{visibleTasks.length}</div>
                             </div>
-                            <div className="text-center">
-                                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Remaining</span>
-                                <div className="text-3xl font-bold font-mono mt-1 text-red-500">
-                                    {visibleTasks.filter(t => !t.completed).length}
+                            <div className="flex justify-center gap-8 mt-3">
+                                <div className="text-center">
+                                    <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Completed</span>
+                                    <div className="text-3xl font-bold font-mono mt-1" style={{ color: "#22c55e" }}>
+                                        {visibleTasks.filter(t => t.completed).length}
+                                    </div>
+                                </div>
+                                <div className="text-center">
+                                    <span className="text-xs font-semibold uppercase tracking-wide opacity-70">Remaining</span>
+                                    <div className="text-3xl font-bold font-mono mt-1" style={{ color: "#ef4444" }}>
+                                        {visibleTasks.filter(t => !t.completed).length}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Centre — task list */}
-                <div className="flex flex-col flex-1 gap-3 py-3">
+                    {/* Centre — task list */}
+                    <div className="flex flex-col flex-1 gap-3 py-3">
 
-                    {/* Toolbar - category+day filters */}                    
-                    <div className="flex items-center gap-1 py-0.5">
-                        <button onClick={filterToday}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-105"
-                            style={{ background: "var(--accent)", color: "var(--card-b-text)" }}>
-                            📅 Today
-                        </button>
-
-                        {selectedDate && (
-                            <div className="flex items-center text-xs gap-1 font-semibold px-1"
-                                    style={{ color: "var(--card-a-text)" }}>
-                                {selectedDate}
-                                <button onClick={clearFilter} className="cursor-pointer ml-1"
-                                        style={{ color: "var(--danger)" }}>✕</button>
-                            </div>
-                        )}
-
-                        {selectedCategory && (
-                            <div className="flex items-center text-xs gap-1 font-semibold px-1"
-                                    style={{ color: "var(--card-a-text)" }}>
-                                {selectedCategory}
-                                <button onClick={clearCategoryFilter} className="cursor-pointer ml-1"
-                                        style={{ color: "var(--danger)" }}>✕</button>
-                            </div>
-                        )}
-
-                        <button onClick={() => setAdd(true)}
-                            className="w-8 h-8 rounded-full text-white text-md border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90 ml-auto"
-                            style={styles.accent}
-                            onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
-                            onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>+</button>
-                        
-                    </div>
-
-                    {/* Per-page selector */}
-                    <div className="flex items-center gap-2 text-xs font-semibold"
-                        style={{ color: "var(--card-a-text)", opacity: 0.7 }}>
-                        <span>Show</span>
-                        {[5, 10, 20, 50].map(n => (
-                            <button
-                                key={n}
-                                onClick={() => { setTasksPerPage(n); setCurrentPage(1); }}
-                                className="px-2 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105"
-                                style={tasksPerPage === n
-                                    ? { background: "var(--accent)", color: "#fff" }
-                                    : { background: "transparent", color: "var(--card-a-text)", opacity: 0.6 }
-                                }>
-                                {n}
+                        {/* Toolbar - category+day filters */}                    
+                        <div className="flex items-center gap-1 py-0.5">
+                            <button onClick={filterToday}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-full cursor-pointer transition-all duration-500 hover:scale-105"
+                                style={{ background: "var(--accent)", color: "var(--card-b-text)" }}>
+                                📅 Today
                             </button>
-                        ))}
-                    </div>
 
-                    {/* Empty state */}
-                    {selectedDate && highlightedIds.length === 0 && !allDone && (
-                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
-                            Nothing to do
-                        </div>
-                    )}
-                    {selectedDate && allDone && (
-                        <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
-                            All done for the day! 🎉
-                        </div>
-                    )}
-
-                    {/* Task cards */}
-                    {pagedTasks.map((task, i) => (
-                        <div key={task.id}
-                            className={`task-wrapper text-xl w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-500 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
-                            style={cardStyle[cardColors[i % 2]]}
-                            onClick={() => handleCardClick(task.id)}>
-
-                            <div className={`font-semibold pr-24 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
-                                {task.title}
-                            </div>
-
-                            {task.deadline && !task.completed && (
-                                <div className="mt-1"><Countdown deadline={task.deadline} /></div>
+                            {selectedDate && (
+                                <div className="flex items-center text-xs gap-1 font-semibold px-1"
+                                        style={{ color: "var(--card-a-text)" }}>
+                                    {selectedDate}
+                                    <button onClick={clearFilter} className="cursor-pointer ml-1"
+                                            style={{ color: "var(--danger)" }}>✕</button>
+                                </div>
                             )}
 
-                            <div className="absolute top-3 right-3 flex gap-1">
-                                {[
-                                    { fn: () => handleToggle(task.id), icon: task.completed ? "☑️" : "✔️" },
-                                    { fn: () => openEdit(task),         icon: "✒️" },
-                                    { fn: () => handleDelete(task.id),  icon: "🚮" },
-                                ].map(({ fn, icon }, idx) => (
-                                    <button key={idx}
-                                        onClick={e => { e.stopPropagation(); fn(); }}
-                                        className="bg-white/25 border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:bg-white/45 hover:scale-110">
-                                        {icon}
-                                    </button>
-                                ))}
-                            </div>
+                            {selectedCategory && (
+                                <div className="flex items-center text-xs gap-1 font-semibold px-1"
+                                        style={{ color: "var(--card-a-text)" }}>
+                                    {selectedCategory}
+                                    <button onClick={clearCategoryFilter} className="cursor-pointer ml-1"
+                                            style={{ color: "var(--danger)" }}>✕</button>
+                                </div>
+                            )}
 
-                            <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
-                                <p>📝 {task.description || "No description"}</p>
-                                <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
-                                <p>🏷️ {task.category || "No category"}</p>
-                            </div>
+                            <button onClick={() => setAdd(true)}
+                                className="w-8 h-8 rounded-full text-white text-md border-none cursor-pointer shadow-md transition-all duration-500 hover:scale-110 hover:rotate-90 ml-auto"
+                                style={styles.accent}
+                                onMouseOver={e => e.currentTarget.style.background = "var(--accent-hover)"}
+                                onMouseOut={e => e.currentTarget.style.background = "var(--accent)"}>+</button>
+                            
                         </div>
-                    ))}
 
-                    {/* Pagination */}
-                    {visibleTasks.length > 0 && (
-                        <div className="flex items-center gap-2 text-xs font-semibold mt-2 px-1"
-                            style={{ color: "var(--card-a-text)" }}>
-                            <button
-                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                                className="px-2.5 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
-                                style={{ background: "var(--accent)", color: "#fff" }}>←</button>
-
-                            <span style={{ opacity: 0.7 }}>
-                                {currentPage} of {totalPages || 1}
-                            </span>
-
-                            <button
-                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages || totalPages === 0}
-                                className="px-2.5 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
-                                style={{ background: "var(--accent)", color: "#fff" }}>→</button>
+                        {/* Per-page selector */}
+                        <div className="flex items-center gap-2 text-xs font-semibold"
+                            style={{ color: "var(--card-a-text)", opacity: 0.7 }}>
+                            <span>Show</span>
+                            {[5, 10, 20, 50].map(n => (
+                                <button
+                                    key={n}
+                                    onClick={() => { setTasksPerPage(n); setCurrentPage(1); }}
+                                    className="px-2 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105"
+                                    style={tasksPerPage === n
+                                        ? { background: "var(--accent)", color: "#fff" }
+                                        : { background: "transparent", color: "var(--card-a-text)", opacity: 0.6 }
+                                    }>
+                                    {n}
+                                </button>
+                            ))}
                         </div>
-                    )}
 
+                        {/* Empty state */}
+                        {selectedDate && highlightedIds.length === 0 && !allDone && (
+                            <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
+                                Nothing to do
+                            </div>
+                        )}
+                        {selectedDate && allDone && (
+                            <div className="w-full px-5 py-7 text-4xl font-mono rounded-[14px] text-center" style={styles.cardA}>
+                                All done for the day! 🎉
+                            </div>
+                        )}
+
+                        {/* Task cards */}
+                        {pagedTasks.map((task, i) => (
+                            <div key={task.id}
+                                className={`task-wrapper text-xl w-full px-4 py-3.5 rounded-[14px] relative cursor-pointer shadow-sm transition-all duration-500 hover:shadow-lg ${clickedCard === task.id ? "clicked" : ""}`}
+                                style={cardStyle[cardColors[i % 2]]}
+                                onClick={() => handleCardClick(task.id)}>
+
+                                <div className={`font-semibold pr-24 leading-snug ${task.completed ? "line-through opacity-50" : ""}`}>
+                                    {task.title}
+                                </div>
+
+                                {task.deadline && !task.completed && (
+                                    <div className="mt-1"><Countdown deadline={task.deadline} /></div>
+                                )}
+
+                                <div className="absolute top-3 right-3 flex gap-1">
+                                    {[
+                                        { fn: () => handleToggle(task.id), icon: task.completed ? "☑️" : "✔️" },
+                                        { fn: () => openEdit(task),         icon: "✒️" },
+                                        { fn: () => handleDelete(task.id),  icon: "🚮" },
+                                    ].map(({ fn, icon }, idx) => (
+                                        <button key={idx}
+                                            onClick={e => { e.stopPropagation(); fn(); }}
+                                            className="bg-calendar-color border-none px-1.5 py-1 rounded-lg cursor-pointer text-sm transition-all duration-500 hover:bg-white/45 hover:scale-110">
+                                            {icon}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className={`task-preview ${clickedCard === task.id ? "clicked" : ""}`}>
+                                    <p>📝 {task.description || "No description"}</p>
+                                    <p>⏰ {task.deadline ? new Date(task.deadline).toLocaleString() : "No deadline"}</p>
+                                    <p>🏷️ {task.category || "No category"}</p>
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* Pagination */}
+                        {visibleTasks.length > 0 && (
+                            <div className="flex items-center gap-2 text-xs font-semibold mt-2 px-1"
+                                style={{ color: "var(--card-a-text)" }}>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-2.5 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
+                                    style={{ background: "var(--accent)", color: "#fff" }}>←</button>
+
+                                <span style={{ opacity: 0.7 }}>
+                                    {currentPage} of {totalPages || 1}
+                                </span>
+
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages || totalPages === 0}
+                                    className="px-2.5 py-1 rounded-lg cursor-pointer transition-all duration-300 hover:scale-105 disabled:opacity-30 disabled:cursor-default"
+                                    style={{ background: "var(--accent)", color: "#fff" }}>→</button>
+                            </div>
+                        )}
+
+                    </div>
+
+                    {/* Right panel */}
+                    <RightPanel
+                        tasks={tasks}
+                        time={time}
+                        today={today}
+                        styles={styles}
+                        onDayClick={(matched, day, done) => {
+                            setHighlightedIds(matched.map(t => t.id));
+                            setSelectedDate(day);
+                            setIsFiltered(day !== null);
+                            setAllDone(done);
+                        }}
+                    />
+    
                 </div>
-
-                {/* Right panel */}
-                <RightPanel
-                    tasks={tasks}
-                    time={time}
-                    today={today}
-                    styles={styles}
-                    onDayClick={(matched, day, done) => {
-                        setHighlightedIds(matched.map(t => t.id));
-                        setSelectedDate(day);
-                        setIsFiltered(day !== null);
-                        setAllDone(done);
-                    }}
-                />
             </div>
+
+
 
             {/* Modals */}
             <AddModal
