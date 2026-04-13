@@ -1,5 +1,40 @@
 const BASE = "";
 
+export async function getCategories() {
+    const res = await fetch(`${BASE}/api/categories`, { headers: authHeaders(false) });
+    if (res.status === 401) { logout(); return; }
+    return res.json();
+}
+
+export async function addCategory(name, icon = "🏷️") {
+    const res = await fetch(`${BASE}/api/categories`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: new URLSearchParams({ name, icon })
+    });
+    if (!res.ok) throw new Error("Failed to add category");
+    return res.json();
+}
+
+export async function updateCategory(id, name, icon) {
+    const res = await fetch(`${BASE}/api/categories/${id}`, {
+        method: "PATCH",
+        headers: authHeaders(),
+        body: new URLSearchParams({ name, icon })
+    });
+    if (!res.ok) throw new Error("Failed to update category");
+    return res.json();
+}
+
+export async function deleteCategory(id) {
+    const res = await fetch(`${BASE}/api/categories/${id}`, {
+        method: "DELETE",
+        headers: authHeaders(false)
+    });
+    if (!res.ok) throw new Error("Failed to delete category");
+}
+
+
 function getToken() {
   return localStorage.getItem("access_token");
 }

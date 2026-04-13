@@ -15,10 +15,10 @@ export default function Navbar({ showLogout = false, username = null }) {
 
     const greeting     = (() => {
         const h = new Date().getHours();
-        if (h >= 5  && h < 12) return { emoji: "🌅", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
-        if (h >= 12 && h < 17) return { emoji: "🌤️", text: "Good Afternoon", sub: "Keep up the momentum!" };
-        if (h >= 17 && h < 24) return { emoji: "🌇", text: "Good Evening",   sub: "You're almost there!" };
-        return                         { emoji: "🌙", text: "Good Night",     sub: "Recharge for tomorrow." };
+        if (h >= 5  && h < 12) return { emoji: "🌤", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
+        if (h >= 12 && h < 17) return { emoji: "🌥", text: "Good Afternoon", sub: "Keep up the momentum!" };
+        if (h >= 17 && h < 24) return { emoji: "", text: "Good Evening",   sub: "You're almost there!" };
+        return                         { emoji: "☆☽", text: "Good Night",     sub: "Recharge for tomorrow." };
     })();
 
 
@@ -26,7 +26,7 @@ export default function Navbar({ showLogout = false, username = null }) {
         <div className="static w-full bg-transparent"
             style={{background:"transparent",padding:"2em 4em"}}>
                 <div className="flex ">
-                    <h2 className="font-bold text-4xl" style={{color:"var(--card-b)"}}>what-do</h2>
+                    <h2 className="font-bold text-4xl" style={{color:"var(--card-b-text)"}}>what-do</h2>
 
                     {/* Greeting */}
                     <div className="flex flex-col text-center py-4 px-2 gap-2 w-full" style={{color: "var(--card-a-text)" }}>
@@ -42,9 +42,9 @@ export default function Navbar({ showLogout = false, username = null }) {
                 
                 <button
                     onClick={() => setIsDark(prev => !prev)}
-                    className="bg-transparent border-none text-xl cursor-pointer transition-transform duration-500 hover:rotate-12 hover:scale-125"
+                    className="bg-transparent border-none text-xl cursor-pointer transition-transform duration-500 hover:rotate-12 hover:scale-125" style={{color:"var(--calendar-text)"}}
                 >
-                    {isDark ? "☀️" : "🌙"}
+                    {isDark ? "☼" : "☾"}
                 </button>
             
 

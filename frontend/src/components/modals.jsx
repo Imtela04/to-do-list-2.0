@@ -1,6 +1,6 @@
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { CATEGORIES } from "../constants";
+
 // ============================================================
 // CONSTANTS
 // ============================================================
@@ -20,16 +20,21 @@ const toLocalDeadline = date => {
 // ============================================================
 // SHARED SUB-COMPONENTS
 // ============================================================
-function CategorySelect({ value, onChange, style }) {
+
+
+function CategorySelect({ value, onChange, style, customCats = [] }) {
+    const allOptions = [
+        { value: "", label: "Select a category" },
+        ...customCats.map(c => ({ value: c.name, label: `${c.icon || "🏷️"} ${c.name}` }))
+    ];
     return (
         <select className={modalInput} style={style} value={value} onChange={onChange}>
-            {CATEGORIES.map(c => (
+            {allOptions.map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
             ))}
         </select>
     );
 }
-
 function DeadlinePicker({ value, onChange, style }) {
     return (
         <DatePicker
@@ -86,8 +91,7 @@ function FormField({ label, labelStyle, children }) {
 // ============================================================
 // MODALS
 // ============================================================
-export function AddModal({ open, form, setForm, error, loading, onSubmit, onClose, styles }) {
-    if (!open) return null;
+export function AddModal({ open, form, setForm, error, loading, onSubmit, onClose, styles, customCats = [] }) {    if (!open) return null;
     const update = field => e => setForm(p => ({ ...p, [field]: e?.target ? e.target.value : e }));
 
     return (
@@ -112,7 +116,7 @@ export function AddModal({ open, form, setForm, error, loading, onSubmit, onClos
             </FormField>
 
             <FormField label="Category (Optional)" labelStyle={styles.labelAlt}>
-                <CategorySelect value={form.category} onChange={update("category")} style={styles.cardA} />
+                <CategorySelect value={form.category} onChange={update("category")} style={styles.cardA} customCats={customCats}/>
             </FormField>
 
             <ModalActions
@@ -124,8 +128,7 @@ export function AddModal({ open, form, setForm, error, loading, onSubmit, onClos
     );
 }
 
-export function EditModal({ taskId, form, setForm, onSave, onClose, styles }) {
-    if (!taskId) return null;
+export function EditModal({ taskId, form, setForm, onSave, onClose, styles, customCats = [] }) {    if (!taskId) return null;
     const update = field => e => setForm(p => ({ ...p, [field]: e?.target ? e.target.value : e }));
 
     return (
@@ -149,7 +152,7 @@ export function EditModal({ taskId, form, setForm, onSave, onClose, styles }) {
             </FormField>
 
             <FormField label="Category" labelStyle={styles.labelAlt}>
-                <CategorySelect value={form.category} onChange={update("category")} style={styles.surface} />
+                <CategorySelect value={form.category} onChange={update("category")} style={styles.surface} customCats={customCats} />
             </FormField>
 
             <ModalActions

@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, Form
 # from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from backend.database import engine, Base, get_db
-from backend.models import User, Todo
+from backend.models import User, Todo, Category
 from backend.schemas import UserPublic, Token
 from backend.auth import hash_password, create_access_token, authenticate_user, get_current_user, create_user
 from datetime import datetime
@@ -33,21 +33,27 @@ app.add_middleware(
 def read_me(current_user: UserPublic = Depends(get_current_user)):
     return current_user
 
-#registration routes
+DEFAULT_CATEGORIES = [
+    {"name": "work",      "icon": "💼"},
+    {"name": "personal",  "icon": "🏠"},
+    {"name": "health",    "icon": "💪"},
+    {"name": "finance",   "icon": "💰"},
+    {"name": "education", "icon": "📚"},
+    {"name": "other",     "icon": "📌"},
+]
 
-@app.post("/api/register", status_code=201)
-def register(
-    # request: Request,
-    username: str = Form(...),
-    password: str = Form(...),
-    db: Session = Depends(get_db)
-):
+#registration routes
+def register(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     hashed = hash_password(password)
     try:
         create_user(db, username, hashed)
-    except HTTPException as e:
-        raise HTTPException(status_code=400, detail="Username already taken") 
+    except HTTPException:
+        raise HTTPException(status_code=400, detail="Username already taken")
     user = authenticate_user(db, username, password)
+    # seed default categories
+    for cat in DEFAULT_CATEGORIES:
+        db.add(Category(name=cat["name"], icon=cat["icon"], owner_id=user.id))
+    db.commit()
     access_token = create_access_token({"sub": user.username})
     return {"access_token": access_token, "token_type": "Bearer"}
 
@@ -200,20 +206,39 @@ def toggle_task(
     db.refresh(task)
     return task
 
+@app.get("/api/categories")
+def get_categories(current_user=Depends(get_current_user), db=Depends(get_db)):
+    user = db.query(User).filter(User.username == current_user.username).first()
+    return user.categories
 
-##deprecated frontend serving - now handled by React dev server during development, and by static build in production
-# app.mount("/src", StaticFiles(directory="frontend/src"), name="src")
-# # Explicit routes for HTML pages — BEFORE the static catch-all
-# @app.get("/")
-# def serve_index():
-#     return FileResponse("frontend/index.html")
+@app.post("/api/categories", status_code=201)
+def add_category(name: str = Form(...), icon: str = Form("🏷️"), current_user=Depends(get_current_user), db=Depends(get_db)):
+    user = db.query(User).filter(User.username == current_user.username).first()
+    cat = Category(name=name, icon=icon, owner_id=user.id)
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return cat
 
-# @app.get("/login.html")
-# def serve_login():
-#     return FileResponse("frontend/login.html")
+@app.patch("/api/categories/{cat_id}")
+def update_category(cat_id: int, name: str = Form(...), icon: str = Form(None), current_user=Depends(get_current_user), db=Depends(get_db)):
+    user = db.query(User).filter(User.username == current_user.username).first()
+    cat = db.query(Category).filter(Category.id == cat_id, Category.owner_id == user.id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    cat.name = name
+    if icon: cat.icon = icon
+    db.commit()
+    db.refresh(cat)
+    return cat
 
-# @app.get("/register.html")
-# def serve_register():
-#     return FileResponse("frontend/register.html")
-# # templates = Jinja2Templates(directory="frontend/templates")
-# app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")  # ✅ serve frontend from root
+@app.delete("/api/categories/{cat_id}")
+def delete_category(cat_id: int, current_user=Depends(get_current_user), db=Depends(get_db)):
+    user = db.query(User).filter(User.username == current_user.username).first()
+    cat = db.query(Category).filter(Category.id == cat_id, Category.owner_id == user.id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="Category not found")
+    db.delete(cat)
+    db.commit()
+    return {"ok": True}
+
