@@ -233,19 +233,18 @@ export default function Index() {
     return (
         <>
         <div id="page-wrap" className="flex flex-col w-full min-h-screen"
-             style={{ color: "var(--card-b)", padding: "0.5em 0.5em" }}>
+             style={{ color: "var(--card-b)", padding: "0" }}>
 
             <Navbar showLogout username={username} />
 
-            {/* Mobile burger */}
-            <div className="md:hidden">
-                <Menu left width={220} pageWrapId="page-wrap" outerContainerId="outer-container" disableAutoFocus>
-                    <CategoryStatsPanel {...catStatsProps} customCats={customCats} onCatsChange={loadCats} />
-                </Menu>
-            </div>
-
             {/* Three column layout */}
-            <div className="flex flex-row gap-2 md:gap-8 w-full min-h-screen px-1 md:px-4">
+            <div className="flex flex-row gap-2 md:gap-8 w-full min-h-screen px-2 md:px-4 pt-2">
+                {/* Mobile burger */}
+                <div className="md:hidden">
+                    <Menu left width={220} pageWrapId="page-wrap" outerContainerId="outer-container" disableAutoFocus>
+                        <CategoryStatsPanel {...catStatsProps} customCats={customCats} onCatsChange={loadCats} />
+                    </Menu>
+                </div>
 
                 {/* Desktop sidebar */}
                 <div className="hidden md:flex shrink-0">
