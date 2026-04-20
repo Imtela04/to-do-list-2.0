@@ -45,11 +45,10 @@ def create_access_token(data: dict, expires_minutes: int = ACCESS_TOKEN_EXPIRE_M
     #print(to_encode, jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM))
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-dummy=hash_password('dummypassword')
+# dummy=hash_password('dummypassword')
 def authenticate_user(db: Session, username: str, password: str):
     user = get_user(db, username)
     if not user:
-        verify_password(password, dummy)
         return False
     if not verify_password(password, user.hashed_password):
         return False
