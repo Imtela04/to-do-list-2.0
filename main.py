@@ -23,7 +23,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://YOUR_GITHUB_USERNAME.github.io",
+        "https://imtela04.github.io",
         "http://localhost:5173",
         "http://localhost:3000",
     ],
