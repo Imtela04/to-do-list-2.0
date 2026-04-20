@@ -22,11 +22,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or ["http://localhost:8000"] to be more strict
+    allow_origins=[
+        "https://YOUR_GITHUB_USERNAME.github.io",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 #homepage route
 #current user route
 @app.get("/api/me", response_model=UserPublic)
