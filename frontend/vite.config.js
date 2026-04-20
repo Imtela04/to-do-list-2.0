@@ -7,8 +7,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  base: '/to-do-list-2.0/',  // ← must match your GitHub repo name exactly
   server: {
-    port: 3000,  // keep your original port
+    port: 3000,
     proxy: {
       '/api': {
         target: 'http://localhost:8000',

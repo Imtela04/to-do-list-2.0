@@ -1,4 +1,4 @@
-const BASE = "";
+const BASE = "https://what-do.up.railway.app/";
 
 export async function getCategories() {
     const res = await fetch(`${BASE}/api/categories`, { headers: authHeaders(false) });
@@ -73,7 +73,7 @@ export async function register(username, password) {
 
 export function logout() {
   localStorage.removeItem("access_token");
-  window.location.href = "/login";
+  window.location.href = "/to-do-list-2.0/login";
 }
 
 export async function getTasks() {
