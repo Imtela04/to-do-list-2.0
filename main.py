@@ -48,6 +48,7 @@ DEFAULT_CATEGORIES = [
 ]
 
 #registration routes
+@app.post("/api/register")
 def register(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     hashed = hash_password(password)
     try:
