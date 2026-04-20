@@ -1,4 +1,4 @@
-const BASE = "https://what-do.up.railway.app/";
+const BASE = "https://what-do.up.railway.app";
 
 export async function getCategories() {
     const res = await fetch(`${BASE}/api/categories`, { headers: authHeaders(false) });
