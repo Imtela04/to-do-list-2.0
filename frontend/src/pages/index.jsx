@@ -61,7 +61,7 @@ export default function Index() {
     const [time, setTime]                         = useState(new Date().toLocaleTimeString());
     const { isDark }                              = useContext(DarkModeContext);
     const [currentPage, setCurrentPage]           = useState(1);
-    const [tasksPerPage, setTasksPerPage]         = useState(10);
+    const [tasksPerPage, setTasksPerPage]         = useState(5);
     const [search, setSearch]                     = useState("");
     const navigate                                = useNavigate();
     const [customCats, setCustomCats] = useState([]);
@@ -195,6 +195,7 @@ export default function Index() {
     const clearFilter         = () => { setHighlightedIds([]); setSelectedDate(null); setIsFiltered(false); };
     const clearCategoryFilter = () => setSelectedCategory(null);
 
+    
     const username = getUsername();
     const today    = DAY_NAMES[new Date().getDay()];
 

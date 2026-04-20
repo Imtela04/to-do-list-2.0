@@ -8,11 +8,18 @@ export default function Navbar({ showLogout = false, username = null }) {
     const navigate              = useNavigate();
     const [open,setOpen]        =useState(false);
 
+    
     const handleLogout = () => {
         logout();
         navigate("/login");
     };
-
+    // add this helper function
+    function getDisplayName(username) {
+        const nicknames = {
+            "Shofiq": "Baba",
+        };
+        return nicknames[username] || username;  // falls back to actual username if no nickname found
+    }
     const greeting     = (() => {
         const h = new Date().getHours();
         if (h >= 5  && h < 12) return { emoji: "🌤", text: "Good Morning",   sub: "Fresh start. Let's get it!" };
@@ -33,7 +40,7 @@ export default function Navbar({ showLogout = false, username = null }) {
                 {/* Greeting */}
                 <div className="w-full bg-transparent px-2 md:px-8 pt-3 pb-2 relative pl-12 md:pl-8">
                     <h1 className="text-lg md:text-3xl font-bold">
-                        {greeting.emoji} {greeting.text}, {username}
+                        {greeting.emoji} {greeting.text}, {getDisplayName(username)}
                     </h1>
                     <p className="text-xs md:text-lg">{greeting.sub}</p>
                 </div>
