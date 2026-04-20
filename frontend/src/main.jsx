@@ -6,7 +6,7 @@ import "./style.css";
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
-        <HashRouter basename="/to-do-list-2.0">
+        <HashRouter>
             <App />
         </HashRouter>
     </StrictMode>

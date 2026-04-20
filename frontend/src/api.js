@@ -73,7 +73,7 @@ export async function register(username, password) {
 
 export function logout() {
   localStorage.removeItem("access_token");
-  window.location.href = "/to-do-list-2.0/login";
+  window.location.href = "/#/login";
 }
 
 export async function getTasks() {

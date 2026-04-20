@@ -11,7 +11,7 @@ export default function Navbar({ showLogout = false, username = null }) {
     
     const handleLogout = () => {
         logout();
-        navigate("/login");
+        navigate("/#/login");
     };
     // add this helper function
     function getDisplayName(username) {
